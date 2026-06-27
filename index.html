@@ -140,7 +140,7 @@
     .btn-x { background-color: var(--x-color); color: white; }
     .btn-clear { background-color: #e0e0e0; color: #333; }
 
-    /* --- 📋 請求書プレビュー画面（無駄な高さを完全カット） --- */
+    /* --- 📋 請求書プレビュー画面（縦伸びバグ完全撲滅版） --- */
     .invoice-preview-wrapper {
       background: #dfdfdf;
       padding: 40px 10px;
@@ -154,7 +154,7 @@
     .invoice-page {
       background: #ffffff;
       width: 210mm;
-      height: auto;             /* 縦の固定を完全に廃止 */
+      height: auto;             /* 縦の固定を完全にカット */
       min-height: auto;         /* 巨大な余白を作る原因だったため完全消去 */
       padding: 20mm;
       box-sizing: border-box;
@@ -251,6 +251,19 @@
 
     .bottom-box p { margin: 4px 0; white-space: pre-wrap; }
 
+    /* ⚠️ ユーザーへのURL消去アナウンス通知 */
+    .print-alert {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
     /* 🐦 X（Twitter）ボタン */
     .x-follow-badge {
       display: inline-block;
@@ -280,17 +293,15 @@
     @media print {
       body { background: none; padding: 0; }
       .container { max-width: 100%; margin: 0; }
-      .control-panel, h1, .subtitle, .disclaimer, .no-print, .x-follow-badge { display: none !important; }
+      .control-panel, h1, .subtitle, .disclaimer, .no-print, .print-alert, .x-follow-badge { display: none !important; }
       .invoice-preview-wrapper { background: none; padding: 0; margin: 0; }
       .invoice-page {
-        width: 210mm;
-        height: 297mm;
+        width: 100%;             /* 印刷時は横幅いっぱいに広げる */
         box-shadow: none;
         padding: 0;
         margin: 0;
         page-break-after: avoid;
       }
-      @page { size: A4 portrait; margin: 15mm; }
     }
   </style>
 </head>
@@ -400,6 +411,11 @@
       <button class="btn btn-x" id="copy-x-btn">進捗をXで報告 📋</button>
       <button class="btn btn-pdf" onclick="window.print()">✨ 1タップでPDF出力</button>
     </div>
+  </div>
+
+  <!-- 💡 URLを消すためのマナー案内表示 -->
+  <div class="print-alert no-print">
+    ⚠️ 印刷マナー：印刷画面の「詳細設定」を開き、<b>「ヘッダーとフッター」のチェックを外す</b>と上下のURLや日付が消えて綺麗に保存できます！
   </div>
 
   <!-- A4プレビューエリア -->
