@@ -143,11 +143,14 @@
     .btn-clear { background-color: #e0e0e0; color: #333; }
 
     /* --- 📋 請求書プレビュー画面 (A4サイズ完全再現) --- */
+       /* --- 📋 請求書プレビュー画面（無駄な下の余白を消去） --- */
     .invoice-preview-wrapper {
       background: #dfdfdf;
       padding: 40px 10px;
       display: flex;
       justify-content: center;
+      align-items: flex-start; /* 上詰めにし、下に無駄な余白を伸ばさない */
+      min-height: auto;        /* 高さを中身のA4用紙に自動でジャストフィットさせる */
     }
 
     .invoice-page {
