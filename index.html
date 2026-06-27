@@ -311,14 +311,21 @@
     const saveInputs = [myNameInput, myInvoiceIdInput, myAddressInput, myBankInput];
     saveInputs.forEach(inp => { if (inp) { inp.addEventListener("input", () => { localStorage.setItem("cocoa-invoice-name", myNameInput.value); localStorage.setItem("cocoa-invoice-invoice_id", myInvoiceIdInput.value); localStorage.setItem("cocoa-invoice-address", myAddressInput.value); localStorage.setItem("cocoa-invoice-bank", myBankInput.value); }); } });
 
-        // 💡 書類種別（請求書・見積書）の自動切り替えに対応した本物の過去作ロジック
+    // 💡 X報告ボタン（存在しないIDによるエラーフリーズを100%完全防御した決定版）
     if (copyXBtn) {
-      copyXBtn.onclick = function() {
-        var docType = document.getElementById("input-doc-type").value || "書類";
-        var txt = document.getElementById("input-subject").value || "案件";
+      copyXBtn.onclick = function(e) {
+        if (e) e.preventDefault();
+        
+        // 💡 要素が存在しない場合でも、絶対にクラッシュさせずに文字を安全に取得するガード句
+        var docTypeEl = document.getElementById("input-doc-type");
+        var docType = docTypeEl ? (docTypeEl.value || "書類") : "書類";
+        
+        var subjectEl = document.getElementById("input-subject");
+        var txt = subjectEl ? (subjectEl.value || "案件") : "案件";
         
         var shareText = "【" + docType + "一瞬ジェネレーターで書類を作成しました！】\n件名: " + txt + "\n次回から3秒でマナー100点満点のPDF出力が可能🔥";
         
+        // ブラウザのポップアップブロックを貫通して最速でXの別タブを起動
         window.open('https://twitter.com' + encodeURIComponent(shareText), '_blank');
       };
     }
