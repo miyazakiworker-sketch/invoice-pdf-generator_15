@@ -140,8 +140,7 @@
     .btn-x { background-color: var(--x-color); color: white; }
     .btn-clear { background-color: #e0e0e0; color: #333; }
 
-    /* --- 📋 請求書プレビュー画面（縦伸びバグ完全撲滅版） --- */
-       /* --- 📋 請求書プレビュー画面（通常時・印刷時ともに完全最適化） --- */
+    /* --- 📋 請求書プレビュー画面（縦縮み・崩れ完全撲滅） --- */
     .invoice-preview-wrapper {
       background: #dfdfdf;
       padding: 40px 10px;
@@ -152,25 +151,10 @@
       border-radius: 8px;
     }
 
-    /* 通常画面では美しいA4サイズを維持し、印刷時はブラウザの用紙設定に自動追従させます */
     .invoice-page {
       background: #ffffff;
       width: 210mm;
-      height: 297mm;             /* 通常画面の潰れを防ぐため、A4縦の絶対値に固定 */
-      padding: 20mm;
-      box-sizing: border-box;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      position: relative;
-      font-size: 14px;
-      color: #000000;
-    }
-
-
-    .invoice-page {
-      background: #ffffff;
-      width: 210mm;
-      height: auto;             /* 縦の固定を完全にカット */
-      min-height: auto;         /* 巨大な余白を作る原因だったため完全消去 */
+      height: 297mm;             /* 確実に固定して潰れを防ぎます */
       padding: 20mm;
       box-sizing: border-box;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -311,7 +295,8 @@
       .control-panel, h1, .subtitle, .disclaimer, .no-print, .print-alert, .x-follow-badge { display: none !important; }
       .invoice-preview-wrapper { background: none; padding: 0; margin: 0; }
       .invoice-page {
-        width: 100%;             /* 印刷時は横幅いっぱいに広げる */
+        width: 100%;
+        height: auto;
         box-shadow: none;
         padding: 0;
         margin: 0;
@@ -408,12 +393,12 @@
 
     <div class="form-group" style="margin-bottom: 15px;">
       <label for="save-my-address">住所・連絡先</label>
-      <textarea id="save-my-address" rows="2" placeholder="〒000-0000 東京都渋谷区...&#10;TEL: 090-xxxx-xxxx"></textarea>
+      <textarea id="save-my-address" rows="2" placeholder="〒000-0000..."></textarea>
     </div>
 
     <div class="form-group" style="margin-bottom: 15px;">
       <label for="save-my-bank">お振込先口座情報 (マナー100点用項目)</label>
-      <textarea id="save-my-bank" rows="2" placeholder="〇〇銀行 〇〇支店 普通 1234567&#10;口座名義：ココア"></textarea>
+      <textarea id="save-my-bank" rows="2" placeholder="〇〇銀行..."></textarea>
     </div>
 
     <div class="form-group">
@@ -428,7 +413,7 @@
     </div>
   </div>
 
-  <!-- 💡 URLを消すためのマナー案内表示 -->
+  <!-- マナー案内表示 -->
   <div class="print-alert no-print">
     ⚠️ 印刷マナー：印刷画面の「詳細設定」を開き、<b>「ヘッダーとフッター」のチェックを外す</b>と上下のURLや日付が消えて綺麗に保存できます！
   </div>
@@ -512,8 +497,6 @@
     <strong>【免責事項・ご利用上の注意】</strong><br>
     本ツールはブラウザのLocalStorage機能を使用し、ユーザーの端末内のみに情報を保存します。サーバーにデータが送信されることはありません。本ツールで生成された書類の正確性や、これに起因するトラブル・不利益について、開発者は一切の責任を負いません。実際の取引にあたっては、インボイス制度等の要件を満たしているか、ご自身の責任で十分にご確認の上ご利用ください。
   </div>
-
-</div> <!-- .container 終了 -->
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     // DOM要素取得
@@ -696,3 +679,5 @@
 </script>
 </body>
 </html>
+
+</div> <!-- .container 終了 -->
