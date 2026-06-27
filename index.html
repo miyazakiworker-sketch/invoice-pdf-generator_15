@@ -319,9 +319,26 @@
         }
       });
     }
-    if (copyXBtn) { copyXBtn.addEventListener("click", () => { if (!shareText) return; navigator.clipboard.writeText(shareText).then(() => { copyXBtn.textContent = "進捗コピー完了！Xへ移動します...💨"; copyXBtn.style.backgroundColor = "#2ed573"; setTimeout(() => { copyXBtn.textContent = "進捗をXで報告 📋"; copyXBtn.style.backgroundColor = "#1da1f2"; }, 1500); }); }); }
-    updateDataOnly();
-  });
+    if (copyXBtn)    if (copyXBtn) {
+      copyXBtn.addEventListener("click", () => {
+        if (!shareText) return;
+        navigator.clipboard.writeText(shareText).then(() => {
+          copyXBtn.textContent = "進捗コピー完了！Xへ移動します...💨";
+          copyXBtn.style.backgroundColor = "#2ed573";
+          
+          // 💡 過去作準拠：コピー完了後、1.5秒後に自動でXの投稿画面へ飛ばす処理を追加
+          setTimeout(() => {
+            const encodeText = encodeURIComponent(shareText);
+            window.open(`https://twitter.com{encodeText}`, "_blank");
+            
+            // ボタンの文字を元の状態に戻す
+            copyXBtn.textContent = "進捗をXで報告 📋";
+            copyXBtn.style.backgroundColor = "#1da1f2";
+          }, 1500);
+        }).catch(() => console.log("コピーエラー"));
+      });
+    }
+
 </script>
 </body>
 </html>
