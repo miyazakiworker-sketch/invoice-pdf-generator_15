@@ -142,6 +142,34 @@
       margin: 20px 0;
     }
 
+    /* 広告枠（過去作準拠の点線枠） */
+    .ad-container {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .ad-label {
+      font-size: 10px;
+      color: #999999;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+
+    .ad-box {
+      background: #ffffff;
+      border: 2px dashed var(--border-color);
+      border-radius: 6px;
+      padding: 20px;
+      color: #777777;
+      font-size: 13px;
+      font-weight: bold;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+
     .disclaimer {
       margin-top: 30px;
       padding: 15px;
@@ -152,7 +180,8 @@
       color: #666;
     }
     
-    /* 📋 印刷時（PDF保存時）のA4レイアウト専用設定 */
+    /* 📋 印刷用隠しプレビューエリア（通常画面では100%完全非表示、印刷時のみ出現） */
+    #runtime-invoice-wrapper { display: none; }
     .invoice-page { font-size: 14px; color: #000; background: #fff; }
     .invoice-title { font-size: 28px; font-weight: bold; letter-spacing: 4px; text-align: center; margin-bottom: 30px; border-bottom: 3px double #000; padding-bottom: 5px; }
     .invoice-header { display: flex; justify-content: space-between; margin-bottom: 30px; }
@@ -171,48 +200,17 @@
     .bottom-box-title { font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid #ccc; padding-bottom: 3px; }
     .bottom-box p { margin: 4px 0; white-space: pre-wrap; }
     
-    /* 印刷時の表示切り替え制御 */
     @media print {
-            .ad-container { display: none !important; }
       body { background: none; padding: 0; }
-      .control-panel, h1, .subtitle, .disclaimer, .no-print, .x-follow-badge { display: none !important; }
+      .control-panel, h1, .subtitle, .disclaimer, .no-print, .x-follow-badge, .ad-container { display: none !important; }
       #runtime-invoice-wrapper { display: block !important; }
     }
-        /* --- 過去作準拠：将来使う広告枠のデザイン --- */
-    .ad-container {
-      margin-top: 30px;
-      text-align: center;
-    }
-
-    .ad-label {
-      font-size: 10px;
-      color: #999999;
-      letter-spacing: 1px;
-      margin-bottom: 5px;
-    }
-
-    .ad-box {
-      background: #ffffff;
-      border: 2px dashed var(--border-color); /* 過去作通りの点線枠 */
-      border-radius: 6px;
-      padding: 20px;
-      color: #777777;
-      font-size: 13px;
-      font-weight: bold;
-      min-height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-
   </style>
 </head>
 <body>
-
 <div class="container">
   <h1>だるい見積書・請求書一瞬PDFジェネレーター</h1>
-  <div class="subtitle">一度入力すればLocalStorageが一生記憶。次回から3秒でマナー100点満点のPDFが出力可能。</div>
+  <div class="subtitle">一度入力すればLocalStorageが一生記憶。次回から3秒でマナー100点満点のPDF出力が可能。</div>
 
   <!-- 操作パネル -->
   <div class="control-panel">
@@ -252,40 +250,83 @@
     </div>
   </div>
 
-  <div style="text-align: center;" class="no-print"><a href="https://x.com/cocoa_next7" target="_blank" class="x-follow-badge">🐦 開発者ココアのXをフォローする</a></div>
-    <!-- 広告表示エリア（過去作と同様のサイズで配置） -->
+  <!-- 過去作準拠：将来使う広告枠 -->
   <div class="ad-container no-print">
     <div class="ad-label">SPONSORED</div>
-    <div class="ad-box">
-      <p>【ここに将来の広告や自作アプリのバナーを表示】</p>
-      <!-- 実装例：<a href="URL"><img src="banner.png" alt="広告"></a> -->
-    </div>
+    <div class="ad-box"><p>【ここに将来の広告や自作アプリのバナーを表示】</p></div>
   </div>
 
+  <div style="text-align: center;" class="no-print"><a href="https://x.com" target="_blank" class="x-follow-badge">🐦 開発者ココアのXをフォローする ➔</a></div>
   <div class="disclaimer"><strong>【免責事項】</strong><br>本ツールはブラウザのLocalStorage機能を使用し端末内のみに情報を保存します。生成書類の正確性やトラブルについて開発者は一切の責任を負いません。</div>
 </div>
+
+<!-- 通常画面には影響を与えないための印刷用静的データ枠 -->
+<div id="runtime-invoice-wrapper"></div>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    const docTypeInput = document.getElementById("input-doc-type"), docIdInput = document.getElementById("input-doc-id"), issueDateInput = document.getElementById("input-issue-date"), dueDateInput = document.getElementById("input-due-date"), clientInput = document.getElementById("input-client"), subjectInput = document.getElementById("input-subject"), itemNameInput = document.getElementById("input-item-name"), itemPriceInput = document.getElementById("input-item-price"), notesInput = document.getElementById("input-notes"), myNameInput = document.getElementById("save-my-name"), myInvoiceIdInput = document.getElementById("save-my-invoice-id"), myAddressInput = document.getElementById("save-my-address"), myBankInput = document.getElementById("save-my-bank"), btnInvoiceOn = document.getElementById("btn-invoice-on"), btnInvoiceOff = document.getElementById("btn-invoice-off"), btnGensenOn = document.getElementById("btn-gensen-on"), btnGensenOff = document.getElementById("btn-gensen-off"), clearStorageBtn = document.getElementById("clear-storage-btn"), copyXBtn = document.getElementById("copy-x-btn"), pdfOutputBtn = document.getElementById("pdf-output-btn");
-    let isInvoiceMode = true, isGensenMode = false, shareText = "";
-    const today = new Date(); issueDateInput.value = today.toISOString().substr(0, 10);
-    const nextMonthEnd = new Date(today.getFullYear(), today.getMonth() + 2, 0); dueDateInput.value = nextMonthEnd.toISOString().substr(0, 10);
+    // フォーム・保存パーツの要素取得
+    const docTypeInput = document.getElementById("input-doc-type");
+    const docIdInput = document.getElementById("input-doc-id");
+    const issueDateInput = document.getElementById("input-issue-date");
+    const dueDateInput = document.getElementById("input-due-date");
+    const clientInput = document.getElementById("input-client");
+    const subjectInput = document.getElementById("input-subject");
+    const itemNameInput = document.getElementById("input-item-name");
+    const itemPriceInput = document.getElementById("input-item-price");
+    const notesInput = document.getElementById("input-notes");
+
+    const myNameInput = document.getElementById("save-my-name");
+    const myInvoiceIdInput = document.getElementById("save-my-invoice-id");
+    const myAddressInput = document.getElementById("save-my-address");
+    const myBankInput = document.getElementById("save-my-bank");
+
+    const btnInvoiceOn = document.getElementById("btn-invoice-on");
+    const btnInvoiceOff = document.getElementById("btn-invoice-off");
+    const btnGensenOn = document.getElementById("btn-gensen-on");
+    const btnGensenOff = document.getElementById("btn-gensen-off");
+    const clearStorageBtn = document.getElementById("clear-storage-btn");
+    const copyXBtn = document.getElementById("copy-x-btn");
+    const pdfOutputBtn = document.getElementById("pdf-output-btn");
+
+    let isInvoiceMode = true;
+    let isGensenMode = false;
+    let shareText = "";
+
+    // 初期日付自動セット
+    const today = new Date();
+    issueDateInput.value = today.toISOString().substr(0, 10);
+    const nextMonthEnd = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+    dueDateInput.value = nextMonthEnd.toISOString().substr(0, 10);
     notesInput.value = "※振込手数料は貴社にてご負担願います。";
+
+    // LocalStorageから事業者情報を復元
     const loadFields = ["name", "invoice_id", "address", "bank", "invoice_mode", "gensen_mode"];
-    const savedData = {}; loadFields.forEach(f => { savedData[f] = localStorage.getItem("cocoa-invoice-" + f); });
+    const savedData = {};
+    loadFields.forEach(f => { savedData[f] = localStorage.getItem("cocoa-invoice-" + f); });
+
     if (savedData.name) myNameInput.value = savedData.name;
     if (savedData.invoice_id) myInvoiceIdInput.value = savedData.invoice_id;
     if (savedData.address) myAddressInput.value = savedData.address;
     if (savedData.bank) myBankInput.value = savedData.bank;
-    if (savedData.invoice_mode === "false") { isInvoiceMode = false; btnInvoiceOn.classList.remove("active"); btnInvoiceOff.classList.add("active"); }
-    if (savedData.gensen_mode === "true") { isGensenMode = true; btnGensenOn.classList.add("active"); btnGensenOff.classList.remove("active"); }
     
+    if (savedData.invoice_mode === "false") {
+      isInvoiceMode = false;
+      btnInvoiceOn.classList.remove("active");
+      btnInvoiceOff.classList.add("active");
+    }
+    if (savedData.gensen_mode === "true") {
+      isGensenMode = true;
+      btnGensenOn.classList.add("active");
+      btnGensenOff.classList.remove("active");
+    }
+
+    // トグル切り替えイベント
     btnInvoiceOn.addEventListener("click", () => { isInvoiceMode = true; btnInvoiceOn.classList.add("active"); btnInvoiceOff.classList.remove("active"); updateDataOnly(); });
     btnInvoiceOff.addEventListener("click", () => { isInvoiceMode = false; btnInvoiceOff.classList.add("active"); btnInvoiceOn.classList.remove("active"); updateDataOnly(); });
     btnGensenOn.addEventListener("click", () => { isGensenMode = true; btnGensenOn.classList.add("active"); btnGensenOff.classList.remove("active"); updateDataOnly(); });
     btnGensenOff.addEventListener("click", () => { isGensenMode = false; btnGensenOff.classList.add("active"); btnGensenOn.classList.remove("active"); updateDataOnly(); });
 
-        // 💡 データの自動セーブとシェアテキスト更新を行う関数
+    // 裏でのLocalStorage自動セーブ & シェア用テキストの作成処理
     function updateDataOnly() {
       const docType = docTypeInput ? (docTypeInput.value || '請求書') : '請求書';
       const subject = subjectInput ? (subjectInput.value || '〇〇に関する御請求') : '〇〇に関する御請求';
@@ -306,13 +347,17 @@
       shareText = `【${docType}一瞬ジェネレーターで書類を作成しました！】\n件名: ${subject}\n総額: ￥${grandTotal.toLocaleString()}-\nLocalStorage記憶機能で、次回から3秒でマナー100点満点のPDF出力が可能🔥\nアプデ後もURLは一生同じ！`;
     }
 
-    // 💡 X報告ボタンのクリックイベント（※順序バグを防ぐため、ここを上に持ってきました）
+    const allInputs = [docTypeInput, docIdInput, issueDateInput, dueDateInput, clientInput, subjectInput, itemNameInput, itemPriceInput, notesInput, myNameInput, myInvoiceIdInput, myAddressInput, myBankInput];
+    allInputs.forEach(inp => { if (inp) inp.addEventListener("input", updateDataOnly); });
+
+    // 💡 ポップアップブロックを100%完全回避する最速Xジャンプ処理
     if (copyXBtn) {
-      copyXBtn.addEventListener("click", () => {
+      copyXBtn.addEventListener("click", (e) => {
+        e.preventDefault();
         if (!shareText) return;
         
         navigator.clipboard.writeText(shareText).then(() => {
-          // クリックした直後のこのタイミングなら、ブラウザにブロックされずに100%別タブが開きます
+          // タイマーを一切挟まないため、ブラウザに遮断されず確実にXが開きます
           window.open('https://twitter.com' + encodeURIComponent(shareText), '_blank');
           
           copyXBtn.textContent = "進捗コピー完了！Xへ移動しました...💨";
@@ -326,21 +371,23 @@
       });
     }
 
-    // ✨ 1タップでPDF出力ボタンクリック時の処理
+    // ✨ 1タップでPDF出力ボタンクリック時の裏側合成処理
     if (pdfOutputBtn) {
       pdfOutputBtn.addEventListener("click", () => {
         const docType = docTypeInput ? (docTypeInput.value || '請求書') : '請求書', docId = docIdInput ? (docIdInput.value || '---') : '---', client = clientInput ? (clientInput.value || '株式会社〇〇 御中') : '株式会社〇〇 御中', subject = subjectInput ? (subjectInput.value || '〇〇に関する御請求') : '〇〇に関する御請求', itemName = itemNameInput ? (itemNameInput.value || '（未入力の品名）') : '（未入力の品名）', itemPrice = itemPriceInput ? (parseFloat(itemPriceInput.value) || 0) : 0;
         const myName = myNameInput ? (myNameInput.value || '（あなたの屋号・氏名）') : '（あなたの屋号・氏名）', myInvoiceId = myInvoiceIdInput ? (myInvoiceIdInput.value || '未登録') : '未登録', myAddress = myAddressInput ? (myAddressInput.value || '（あなたの住所・連絡先）') : '（あなたの住所・連絡先）', myBank = myBankInput ? (myBankInput.value || '（振込先口座情報）') : '（振込先口座情報）', notes = notesInput ? (notesInput.value || '') : '';
         let subtotal = itemPrice, tax = isInvoiceMode ? Math.floor(subtotal * 0.10) : 0, gensen = isGensenMode ? Math.floor(subtotal * 0.1021) : 0, grandTotal = subtotal + tax - gensen;
         const formatDate = (dateStr) => { if(!dateStr) return '---'; const d = new Date(dateStr); return `${d.getFullYear()}年${String(d.getMonth()+1).padStart(2,'0')}月${String(d.getDate()).padStart(2,'0')}日`; };
-        const oldWrapper = document.getElementById('runtime-invoice-wrapper'); if (oldWrapper) oldWrapper.remove();
-        const wrapper = document.createElement('div'); wrapper.id = 'runtime-invoice-wrapper'; wrapper.style.display = 'none';
-        wrapper.innerHTML = `<div class="invoice-page"><div class="invoice-title">${docType.split('').join(' ')}</div><div class="invoice-header"><div class="client-side"><div class="client-name">${client}</div><div style="margin-top:15px;">件名：${subject}</div></div><div class="provider-side"><div style="margin-bottom:10px;"><div>日付：${formatDate(issueDateInput.value)}</div><div>番号：${docId}</div></div><div class="provider-name">${myName}</div><div style="white-space:pre-wrap;font-size:12px;color:#333;">${myAddress}</div><div style="font-size:11px;margin-top:5px;">${isInvoiceMode ? '登録番号: ' + myInvoiceId : ''}</div></div></div><div class="total-block"><span>ご${docType}金額：</span><span>￥${grandTotal.toLocaleString()}- (${isInvoiceMode ? '税込' : '非課税'})</span></div><table class="item-table"><thead><tr><th style="width:55%;">品名 / 項目</th><th style="width:15%;">数量</th><th style="width:30%;" class="text-right">金額(税込)</th></tr></thead><tbody><tr><td>${itemName}</td><td class="text-center">1</td><td class="text-right">￥${subtotal.toLocaleString()}</td></tr><tr><td colspan="2" class="text-right" style="font-size:12px;color:#555;">小計 (税抜)</td><td class="text-right">￥${subtotal.toLocaleString()}</td></tr>${isInvoiceMode ? `<tr><td colspan="2" class="text-right" style="font-size:12px;color:#555;">消費税額 (10%)</td><td class="text-right">￥${tax.toLocaleString()}</td></tr>` : ''}${isGensenMode ? `<tr><td colspan="2" class="text-right" style="font-size:12px;color:#d32f2f;">源泉徴収税額 (10.21%)</td><td class="text-right" style="color:#d32f2f;">-￥${gensen.toLocaleString()}</td></tr>` : ''}</tbody></table><div class="invoice-footer-details"><div class="bottom-box"><div class="bottom-box-title">🏦 お振込み先</div><p style="white-space:pre-wrap;">${myBank}</p></div><div class="bottom-box"><div class="bottom-box-title">📝 備考 / お支払期限</div><div><strong>期限:</strong> ${formatDate(dueDateInput.value)}</div><p style="margin-top:8px;white-space:pre-wrap;">${notes}</p></div></div></div>`;
-        document.body.appendChild(wrapper); window.print();
+        
+        const wrapper = document.getElementById('runtime-invoice-wrapper');
+        if (wrapper) {
+          wrapper.innerHTML = `<div class="invoice-page"><div class="invoice-title">${docType.split('').join(' ')}</div><div class="invoice-header"><div class="client-side"><div class="client-name">${client}</div><div style="margin-top:15px;">件名：${subject}</div></div><div class="provider-side"><div style="margin-bottom:10px;"><div>日付：${formatDate(issueDateInput.value)}</div><div>番号：${docId}</div></div><div class="provider-name">${myName}</div><div style="white-space:pre-wrap;font-size:12px;color:#333;">${myAddress}</div><div style="font-size:11px;margin-top:5px;">${isInvoiceMode ? '登録番号: ' + myInvoiceId : ''}</div></div></div><div class="total-block"><span>ご${docType}金額：</span><span>￥${grandTotal.toLocaleString()}- (${isInvoiceMode ? '税込' : '非課税'})</span></div><table class="item-table"><thead><tr><th style="width:55%;">品名 / 項目</th><th style="width:15%;">数量</th><th style="width:30%;" class="text-right">金額(税込)</th></tr></thead><tbody><tr><td>${itemName}</td><td class="text-center">1</td><td class="text-right">￥${subtotal.toLocaleString()}</td></tr><tr><td colspan="2" class="text-right" style="font-size:12px;color:#555;">小計 (税抜)</td><td class="text-right">￥${subtotal.toLocaleString()}</td></tr>${isInvoiceMode ? `<tr><td colspan="2" class="text-right" style="font-size:12px;color:#555;">消費税額 (10%)</td><td class="text-right">￥${tax.toLocaleString()}</td></tr>` : ''}${isGensenMode ? `<tr><td colspan="2" class="text-right" style="font-size:12px;color:#d32f2f;">源泉徴収税額 (10.21%)</td><td class="text-right" style="color:#d32f2f;">-￥${gensen.toLocaleString()}</td></tr>` : ''}</tbody></table><div class="invoice-footer-details"><div class="bottom-box"><div class="bottom-box-title">🏦 お振込み先</div><p style="white-space:pre-wrap;">${myBank}</p></div><div class="bottom-box"><div class="bottom-box-title">📝 備考 / お支払期限</div><div><strong>期限:</strong> ${formatDate(dueDateInput.value)}</div><p style="margin-top:8px;white-space:pre-wrap;">${notes}</p></div></div></div>`;
+          window.print();
+        }
       });
     }
 
-    // 記憶クリア処理
+    // 記憶クリアイベント
     if (clearStorageBtn) {
       clearStorageBtn.addEventListener("click", () => {
         if(confirm('記憶を完全に削除しますか？')) {
@@ -348,10 +395,6 @@
         }
       });
     }
-
-    // 入力監視の登録処理（※バグ防止のため、ボタン設定よりも後ろの末尾に移動しました）
-    const allInputs = [docTypeInput, docIdInput, issueDateInput, dueDateInput, clientInput, subjectInput, itemNameInput, itemPriceInput, notesInput, myNameInput, myInvoiceIdInput, myAddressInput, myBankInput];
-    allInputs.forEach(inp => { if (inp) inp.addEventListener("input", updateDataOnly); });
 
     // 初回起動
     updateDataOnly();
