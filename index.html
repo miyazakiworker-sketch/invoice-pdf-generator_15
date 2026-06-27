@@ -311,24 +311,18 @@
     const saveInputs = [myNameInput, myInvoiceIdInput, myAddressInput, myBankInput];
     saveInputs.forEach(inp => { if (inp) { inp.addEventListener("input", () => { localStorage.setItem("cocoa-invoice-name", myNameInput.value); localStorage.setItem("cocoa-invoice-invoice_id", myInvoiceIdInput.value); localStorage.setItem("cocoa-invoice-address", myAddressInput.value); localStorage.setItem("cocoa-invoice-bank", myBankInput.value); }); } });
 
-       // 過去作の確実な動くロジックをそのまま移植
+        // 💡 書類種別（請求書・見積書）の自動切り替えに対応した本物の過去作ロジック
     if (copyXBtn) {
       copyXBtn.onclick = function() {
-        var docType = docTypeInput ? (docTypeInput.value || '請求書') : '請求書';
-        var subject = subjectInput ? (subjectInput.value || '〇〇に関する御請求') : '〇〇に関する御請求';
-        var itemPrice = itemPriceInput ? (parseFloat(itemPriceInput.value) || 0) : 0;
+        var docType = document.getElementById("input-doc-type").value || "書類";
+        var txt = document.getElementById("input-subject").value || "案件";
         
-        var subtotal = itemPrice;
-        var tax = isInvoiceMode ? Math.floor(subtotal * 0.10) : 0;
-        var gensen = isGensenMode ? Math.floor(subtotal * 0.1021) : 0;
-        var grandTotal = subtotal + tax - gensen;
+        var shareText = "【" + docType + "一瞬ジェネレーターで書類を作成しました！】\n件名: " + txt + "\n次回から3秒でマナー100点満点のPDF出力が可能🔥";
         
-        var shareText = "【" + docType + "一瞬ジェネレーターで書類を作成しました！】\n件名: " + subject + "\n総額: ￥" + grandTotal.toLocaleString() + "-\nLocalStorage記憶機能で、次回から3秒でマナー100点満点のPDF出力が可能🔥\nアプデ後もURLは一生同じ！";
-        
-        // 過去作通りの最速 window.open のみ。余計なクリップボードエラーを一切挟みません
         window.open('https://twitter.com' + encodeURIComponent(shareText), '_blank');
       };
     }
+
 
     // ✨ 1タップでPDF出力ボタンクリック時の裏側合成処理
     if (pdfOutputBtn) {
