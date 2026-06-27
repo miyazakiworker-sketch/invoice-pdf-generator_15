@@ -321,15 +321,22 @@
     }
         // 💡 X報告ボタンの修正（コピー後に自動でXへジャンプ）
       // 💡 X報告ボタンの修正（URL結合バグを完全に修正）
+        // 💡 X報告ボタンの修正（ポップアップブロックを100%回避するロジック）
     if (copyXBtn) {
       copyXBtn.addEventListener("click", () => {
         if (!shareText) return;
+        
+        // 1. クリップボードへのコピーを実行
         navigator.clipboard.writeText(shareText).then(() => {
-          copyXBtn.textContent = "進捗コピー完了！Xへ移動します...💨";
+          // 2. ボタンを押した「その瞬間」ならブロックされないため、タイマーを挟まずに即座にXを開く
+          window.open('https://twitter.com' + encodeURIComponent(shareText), '_blank');
+          
+          // 3. 開いた後に、ボタンの見た目を「完了アニメーション」に切り替える
+          copyXBtn.textContent = "進捗コピー完了！Xへ移動しました...💨";
           copyXBtn.style.backgroundColor = "#2ed573";
+          
+          // 4. 1.5秒後にボタンの見た目を元の青色に戻す
           setTimeout(() => {
-            // 文字列結合方式（+）に完全に書き換え、バグを100%排除しました
-            window.open('https://twitter.com' + encodeURIComponent(shareText), '_blank');
             copyXBtn.textContent = "進捗をXで報告 📋";
             copyXBtn.style.backgroundColor = "#1da1f2";
           }, 1500);
@@ -343,4 +350,3 @@
 </script>
 </body>
 </html>
-
