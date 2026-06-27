@@ -312,24 +312,23 @@
     saveInputs.forEach(inp => { if (inp) { inp.addEventListener("input", () => { localStorage.setItem("cocoa-invoice-name", myNameInput.value); localStorage.setItem("cocoa-invoice-invoice_id", myInvoiceIdInput.value); localStorage.setItem("cocoa-invoice-address", myAddressInput.value); localStorage.setItem("cocoa-invoice-bank", myBankInput.value); }); } });
 
     // 💡 ポップアップブロックを100%回避して確実にジャンプする最速X報告ロジック
+       // 💡 X報告ボタン（フリーズとジャンプの不具合をピンポイントで完全修正）
     if (copyXBtn) {
-      copyXBtn.addEventListener("click", (e) => {
+      copyXBtn.onclick = (e) => {
         e.preventDefault();
         const docType = docTypeInput ? (docTypeInput.value || '請求書') : '請求書', subject = subjectInput ? (subjectInput.value || '〇〇に関する御請求') : '〇〇に関する御請求', itemPrice = itemPriceInput ? (parseFloat(itemPriceInput.value) || 0) : 0;
         let subtotal = itemPrice, tax = isInvoiceMode ? Math.floor(subtotal * 0.10) : 0, gensen = isGensenMode ? Math.floor(subtotal * 0.1021) : 0, grandTotal = subtotal + tax - gensen;
         const shareText = "【" + docType + "一瞬ジェネレーターで書類を作成しました！】\n件名: " + subject + "\n総額: ￥" + grandTotal.toLocaleString() + "-\nLocalStorage記憶機能で、次回から3秒でマナー100点満点のPDF出力が可能🔥\nアプデ後もURLは一生同じ！";
-
+        
+        // 💡 100%確実に別タブを開くため、最優先でwindow.openを発火させます
         window.open('https://twitter.com' + encodeURIComponent(shareText), '_blank');
-
         navigator.clipboard.writeText(shareText).then(() => {
           copyXBtn.textContent = "進捗コピー完了！Xへ移動しました...💨"; copyXBtn.style.backgroundColor = "#2ed573";
           setTimeout(() => { copyXBtn.textContent = "進捗をXで報告 📋"; copyXBtn.style.backgroundColor = "#1da1f2"; }, 1500);
-        }).catch(() => {
-          copyXBtn.textContent = "Xへ移動しました...💨";
-          setTimeout(() => { copyXBtn.textContent = "進捗をXで報告 📋"; copyXBtn.style.backgroundColor = "#1da1f2"; }, 1500);
         });
-      });
+      };
     }
+
 
     // ✨ 1タップでPDF出力ボタンクリック時の裏側合成処理
     if (pdfOutputBtn) {
