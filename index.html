@@ -173,10 +173,39 @@
     
     /* 印刷時の表示切り替え制御 */
     @media print {
+            .ad-container { display: none !important; }
       body { background: none; padding: 0; }
       .control-panel, h1, .subtitle, .disclaimer, .no-print, .x-follow-badge { display: none !important; }
       #runtime-invoice-wrapper { display: block !important; }
     }
+        /* --- 過去作準拠：将来使う広告枠のデザイン --- */
+    .ad-container {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .ad-label {
+      font-size: 10px;
+      color: #999999;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+    }
+
+    .ad-box {
+      background: #ffffff;
+      border: 2px dashed var(--border-color); /* 過去作通りの点線枠 */
+      border-radius: 6px;
+      padding: 20px;
+      color: #777777;
+      font-size: 13px;
+      font-weight: bold;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+
   </style>
 </head>
 <body>
