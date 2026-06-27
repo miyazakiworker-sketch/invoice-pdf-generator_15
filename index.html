@@ -285,20 +285,48 @@
     btnGensenOn.addEventListener("click", () => { isGensenMode = true; btnGensenOn.classList.add("active"); btnGensenOff.classList.remove("active"); updateDataOnly(); });
     btnGensenOff.addEventListener("click", () => { isGensenMode = false; btnGensenOff.classList.add("active"); btnGensenOn.classList.remove("active"); updateDataOnly(); });
 
+        // 💡 データの自動セーブとシェアテキスト更新を行う関数
     function updateDataOnly() {
-      const docType = docTypeInput ? (docTypeInput.value || '請求書') : '請求書', subject = subjectInput ? (subjectInput.value || '〇〇に関する御請求') : '〇〇に関する御請求', itemPrice = itemPriceInput ? (parseFloat(itemPriceInput.value) || 0) : 0;
-      let subtotal = itemPrice, tax = isInvoiceMode ? Math.floor(subtotal * 0.10) : 0, gensen = isGensenMode ? Math.floor(subtotal * 0.1021) : 0, grandTotal = subtotal + tax - gensen;
+      const docType = docTypeInput ? (docTypeInput.value || '請求書') : '請求書';
+      const subject = subjectInput ? (subjectInput.value || '〇〇に関する御請求') : '〇〇に関する御請求';
+      const itemPrice = itemPriceInput ? (parseFloat(itemPriceInput.value) || 0) : 0;
+      
+      let subtotal = itemPrice;
+      let tax = isInvoiceMode ? Math.floor(subtotal * 0.10) : 0;
+      let gensen = isGensenMode ? Math.floor(subtotal * 0.1021) : 0;
+      let grandTotal = subtotal + tax - gensen;
+
       if (myNameInput) localStorage.setItem("cocoa-invoice-name", myNameInput.value);
       if (myInvoiceIdInput) localStorage.setItem("cocoa-invoice-invoice_id", myInvoiceIdInput.value);
       if (myAddressInput) localStorage.setItem("cocoa-invoice-address", myAddressInput.value);
       if (myBankInput) localStorage.setItem("cocoa-invoice-bank", myBankInput.value);
       localStorage.setItem("cocoa-invoice-invoice_mode", isInvoiceMode);
       localStorage.setItem("cocoa-invoice-gensen_mode", isGensenMode);
+
       shareText = `【${docType}一瞬ジェネレーターで書類を作成しました！】\n件名: ${subject}\n総額: ￥${grandTotal.toLocaleString()}-\nLocalStorage記憶機能で、次回から3秒でマナー100点満点のPDF出力が可能🔥\nアプデ後もURLは一生同じ！`;
     }
-    const allInputs = [docTypeInput, docIdInput, issueDateInput, dueDateInput, clientInput, subjectInput, itemNameInput, itemPriceInput, notesInput, myNameInput, myInvoiceIdInput, myAddressInput, myBankInput];
-    allInputs.forEach(inp => { if (inp) inp.addEventListener("input", updateDataOnly); });
 
+    // 💡 X報告ボタンのクリックイベント（※順序バグを防ぐため、ここを上に持ってきました）
+    if (copyXBtn) {
+      copyXBtn.addEventListener("click", () => {
+        if (!shareText) return;
+        
+        navigator.clipboard.writeText(shareText).then(() => {
+          // クリックした直後のこのタイミングなら、ブラウザにブロックされずに100%別タブが開きます
+          window.open('https://twitter.com' + encodeURIComponent(shareText), '_blank');
+          
+          copyXBtn.textContent = "進捗コピー完了！Xへ移動しました...💨";
+          copyXBtn.style.backgroundColor = "#2ed573";
+          
+          setTimeout(() => {
+            copyXBtn.textContent = "進捗をXで報告 📋";
+            copyXBtn.style.backgroundColor = "#1da1f2";
+          }, 1500);
+        }).catch(() => console.log("コピーエラー"));
+      });
+    }
+
+    // ✨ 1タップでPDF出力ボタンクリック時の処理
     if (pdfOutputBtn) {
       pdfOutputBtn.addEventListener("click", () => {
         const docType = docTypeInput ? (docTypeInput.value || '請求書') : '請求書', docId = docIdInput ? (docIdInput.value || '---') : '---', client = clientInput ? (clientInput.value || '株式会社〇〇 御中') : '株式会社〇〇 御中', subject = subjectInput ? (subjectInput.value || '〇〇に関する御請求') : '〇〇に関する御請求', itemName = itemNameInput ? (itemNameInput.value || '（未入力の品名）') : '（未入力の品名）', itemPrice = itemPriceInput ? (parseFloat(itemPriceInput.value) || 0) : 0;
@@ -312,6 +340,7 @@
       });
     }
 
+    // 記憶クリア処理
     if (clearStorageBtn) {
       clearStorageBtn.addEventListener("click", () => {
         if(confirm('記憶を完全に削除しますか？')) {
@@ -319,30 +348,10 @@
         }
       });
     }
-        // 💡 X報告ボタンの修正（コピー後に自動でXへジャンプ）
-      // 💡 X報告ボタンの修正（URL結合バグを完全に修正）
-        // 💡 X報告ボタンの修正（ポップアップブロックを100%回避するロジック）
-    if (copyXBtn) {
-      copyXBtn.addEventListener("click", () => {
-        if (!shareText) return;
-        
-        // 1. クリップボードへのコピーを実行
-        navigator.clipboard.writeText(shareText).then(() => {
-          // 2. ボタンを押した「その瞬間」ならブロックされないため、タイマーを挟まずに即座にXを開く
-          window.open('https://twitter.com' + encodeURIComponent(shareText), '_blank');
-          
-          // 3. 開いた後に、ボタンの見た目を「完了アニメーション」に切り替える
-          copyXBtn.textContent = "進捗コピー完了！Xへ移動しました...💨";
-          copyXBtn.style.backgroundColor = "#2ed573";
-          
-          // 4. 1.5秒後にボタンの見た目を元の青色に戻す
-          setTimeout(() => {
-            copyXBtn.textContent = "進捗をXで報告 📋";
-            copyXBtn.style.backgroundColor = "#1da1f2";
-          }, 1500);
-        }).catch(() => console.log("コピーエラー"));
-      });
-    }
+
+    // 入力監視の登録処理（※バグ防止のため、ボタン設定よりも後ろの末尾に移動しました）
+    const allInputs = [docTypeInput, docIdInput, issueDateInput, dueDateInput, clientInput, subjectInput, itemNameInput, itemPriceInput, notesInput, myNameInput, myInvoiceIdInput, myAddressInput, myBankInput];
+    allInputs.forEach(inp => { if (inp) inp.addEventListener("input", updateDataOnly); });
 
     // 初回起動
     updateDataOnly();
