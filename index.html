@@ -283,7 +283,7 @@
   <h1>だるい見積書・請求書一瞬PDFジェネレーター</h1>
   <div class="subtitle">一度入力すればLocalStorageが一生記憶。次回から3秒でマナー100点満点のPDFが出力可能。</div>
 
-  <!-- ココアさん設計思想の操作パネル -->
+  <!-- 操作パネル -->
   <div class="control-panel">
     <div class="panel-title">⚙️ 書類設定（入力するとリアルタイム反映）</div>
     
@@ -334,7 +334,7 @@
       </div>
     </div>
 
-    <!-- 過去作同様のボタン切り替えシステム (Q1 & Q2対応) -->
+    <!-- 切り替えシステム -->
     <div class="form-row">
       <div>
         <label>インボイス制度（消費税10%内訳）</label>
@@ -385,8 +385,174 @@
       <button class="btn btn-pdf" onclick="window.print()">✨ 1タップでPDF出力</button>
     </div>
   </div>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // フォームパーツ
+    const docTypeInput = document.getElementById("input-doc-type");
+    const docIdInput = document.getElementById("input-doc-id");
+    const issueDateInput = document.getElementById("input-issue-date");
+    const dueDateInput = document.getElementById("input-due-date");
+    const clientInput = document.getElementById("input-client");
+    const subjectInput = document.getElementById("input-subject");
+    const itemNameInput = document.getElementById("input-item-name");
+    const itemPriceInput = document.getElementById("input-item-price");
+    const notesInput = document.getElementById("input-notes");
 
-    // 最速コピー処理 (ココアさんのXマーケティング導線)
+    // 保存対象パーツ
+    const myNameInput = document.getElementById("save-my-name");
+    const myInvoiceIdInput = document.getElementById("save-my-invoice-id");
+    const myAddressInput = document.getElementById("save-my-address");
+    const myBankInput = document.getElementById("save-my-bank");
+
+    // トグルボタン
+    const btnInvoiceOn = document.getElementById("btn-invoice-on");
+    const btnInvoiceOff = document.getElementById("btn-invoice-off");
+    const btnGensenOn = document.getElementById("btn-gensen-on");
+    const btnGensenOff = document.getElementById("btn-gensen-off");
+    const clearStorageBtn = document.getElementById("clear-storage-btn");
+    const copyXBtn = document.getElementById("copy-x-btn");
+
+    // 内部状態
+    let isInvoiceMode = true;
+    let isGensenMode = false;
+    let shareText = "";
+
+    // 【過去作引継ぎ仕様】今日と来月末の日付を自動セット
+    const today = new Date();
+    issueDateInput.value = today.toISOString().substr(0, 10);
+    const nextMonthEnd = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+    dueDateInput.value = nextMonthEnd.toISOString().substr(0, 10);
+    notesInput.value = "※振込手数料は貴社にてご負担願います。";
+
+    // 【過去作引継ぎ仕様】LocalStorageからデータを復元
+    const loadFields = ["name", "invoice_id", "address", "bank", "invoice_mode", "gensen_mode"];
+    const savedData = {};
+    loadFields.forEach(f => { savedData[f] = localStorage.getItem("cocoa-invoice-" + f); });
+
+    if (savedData.name) myNameInput.value = savedData.name;
+    if (savedData.invoice_id) myInvoiceIdInput.value = savedData.invoice_id;
+    if (savedData.address) myAddressInput.value = savedData.address;
+    if (savedData.bank) myBankInput.value = savedData.bank;
+    
+    if (savedData.invoice_mode === "false") {
+      isInvoiceMode = false;
+      btnInvoiceOn.classList.remove("active");
+      btnInvoiceOff.classList.add("active");
+    }
+    if (savedData.gensen_mode === "true") {
+      isGensenMode = true;
+      btnGensenOn.classList.add("active");
+      btnGensenOff.classList.remove("active");
+    }
+
+    // トグルボタン切り替えイベント
+    btnInvoiceOn.addEventListener("click", () => { isInvoiceMode = true; btnInvoiceOn.classList.add("active"); btnInvoiceOff.classList.remove("active"); updateInvoice(); });
+    btnInvoiceOff.addEventListener("click", () => { isInvoiceMode = false; btnInvoiceOff.classList.add("active"); btnInvoiceOn.classList.remove("active"); updateInvoice(); });
+    btnGensenOn.addEventListener("click", () => { isGensenMode = true; btnGensenOn.classList.add("active"); btnGensenOff.classList.remove("active"); updateInvoice(); });
+    btnGensenOff.addEventListener("click", () => { isGensenMode = false; btnGensenOff.classList.add("active"); btnGensenOn.classList.remove("active"); updateInvoice(); });
+
+    // 【コア機能】超軽量リアルタイム同期・計算ロジック
+    function updateInvoice() {
+      const docType = docTypeInput.value;
+      const docId = docIdInput.value || '---';
+      const client = clientInput.value || '株式会社〇〇 御中';
+      const subject = subjectInput.value || '〇〇に関する御請求';
+      const itemName = itemNameInput.value || '（未入力の品名）';
+      const itemPrice = parseFloat(itemPriceInput.value) || 0;
+
+      const myName = myNameInput.value || '（あなたの屋号・氏名）';
+      const myInvoiceId = myInvoiceIdInput.value || '未登録';
+      const myAddress = myAddressInput.value || '（あなたの住所・連絡先）';
+      const myBank = myBankInput.value || '（振込先口座情報）';
+      const notes = notesInput.value || '';
+
+      // 税金・総額の計算
+      let subtotal = itemPrice;
+      let tax = isInvoiceMode ? Math.floor(subtotal * 0.10) : 0;
+      let gensen = isGensenMode ? Math.floor(subtotal * 0.1021) : 0;
+      let grandTotal = subtotal + tax - gensen;
+
+      // 日付フォーマット変換 (YYYY-MM-DD -> YYYY年MM月DD日)
+      const formatDate = (dateStr) => {
+        if(!dateStr) return '---';
+        const d = new Date(dateStr);
+        return `${d.getFullYear()}年${String(d.getMonth()+1).padStart(2,'0')}月${String(d.getDate()).padStart(2,'0')}日`;
+      };
+
+      // A4プレビュー画面へ即座に反映
+      document.getElementById('view-doc-type').innerText = docType.split('').join(' ');
+      document.getElementById('view-doc-id').innerText = docId;
+      document.getElementById('view-issue-date').innerText = formatDate(issueDateInput.value);
+      document.getElementById('view-due-date').innerText = formatDate(dueDateInput.value);
+      document.getElementById('view-client').innerText = client;
+      document.getElementById('view-subject').innerText = `件名：${subject}`;
+      document.getElementById('view-item-name').innerText = itemName;
+      
+      document.getElementById('view-item-price').innerText = `￥${subtotal.toLocaleString()}`;
+      document.getElementById('subtotal-val').innerText = `￥${subtotal.toLocaleString()}`;
+      
+      // インボイス（消費税）表示制御
+      const taxRow = document.getElementById('tax-row');
+      if(isInvoiceMode) {
+        taxRow.style.display = 'table-row';
+        document.getElementById('tax-val').innerText = `￥${tax.toLocaleString()}`;
+        document.getElementById('view-my-invoice-id').innerText = `登録番号: ${myInvoiceId}`;
+      } else {
+        taxRow.style.display = 'none';
+        document.getElementById('view-my-invoice-id').innerText = '';
+      }
+
+      // 源泉徴収税表示制御
+      const gensenRow = document.getElementById('gensen-row');
+      if(isGensenMode) {
+        gensenRow.style.display = 'table-row';
+        document.getElementById('gensen-val').innerText = `-￥${gensen.toLocaleString()}`;
+      } else {
+        gensenRow.style.display = 'none';
+      }
+
+      // 最終請求金額の同期
+      document.getElementById('view-total-label').innerText = `ご${docType}金額：`;
+      document.getElementById('view-grand-total').innerText = `￥${grandTotal.toLocaleString()}- (${isInvoiceMode ? '税込' : '非課税'})`;
+
+      document.getElementById('view-my-name').innerText = myName;
+      document.getElementById('view-my-address').innerText = myAddress;
+      document.getElementById('view-my-bank').innerText = myBank;
+      document.getElementById('view-notes').innerText = notes;
+
+      // 事業者情報をLocalStorageに自動セーブ
+      localStorage.setItem("cocoa-invoice-name", myNameInput.value);
+      localStorage.setItem("cocoa-invoice-invoice_id", myInvoiceIdInput.value);
+      localStorage.setItem("cocoa-invoice-address", myAddressInput.value);
+      localStorage.setItem("cocoa-invoice-bank", myBankInput.value);
+      localStorage.setItem("cocoa-invoice-invoice_mode", isInvoiceMode);
+      localStorage.setItem("cocoa-invoice-gensen_mode", isGensenMode);
+
+      // ココアさんマーケティング用のXシェアテキスト生成
+      shareText = `【${docType}一瞬ジェネレーターで書類を作成しました！】\n件名: ${subject}\n総額: ￥${grandTotal.toLocaleString()}-\nLocalStorage記憶機能で、次回から3秒でマナー100点満点のPDF出力が可能🔥\nアプデ後もURLは一生同じ！`;
+    }
+
+    // 全ての入力を1文字ごとに監視
+    const allInputs = [
+      docTypeInput, docIdInput, issueDateInput, dueDateInput, clientInput,
+      subjectInput, itemNameInput, itemPriceInput, notesInput,
+      myNameInput, myInvoiceIdInput, myAddressInput, myBankInput
+    ];
+    allInputs.forEach(inp => inp.addEventListener("input", updateInvoice));
+
+    // 記憶クリアボタンの処理
+    clearStorageBtn.addEventListener("click", () => {
+      if(confirm('記憶しているあなたの情報や口座情報を完全に削除しますか？')) {
+        localStorage.clear();
+        myNameInput.value = ''; myInvoiceIdInput.value = ''; myAddressInput.value = ''; myBankInput.value = '';
+        isInvoiceMode = true; isGensenMode = false;
+        btnInvoiceOn.classList.add("active"); btnInvoiceOff.classList.remove("active");
+        btnGensenOn.classList.remove("active"); btnGensenOff.classList.add("active");
+        updateInvoice();
+      }
+    });
+
+    // 最速クリップボードコピー＆X案内ロジック
     copyXBtn.addEventListener("click", () => {
       if (!shareText) return;
       navigator.clipboard.writeText(shareText).then(() => {
@@ -394,14 +560,16 @@
         copyXBtn.style.backgroundColor = "#2ed573";
         setTimeout(() => {
           copyXBtn.textContent = "進捗をXで報告 📋";
-          copyXBtn.style.backgroundColor = "#1da1f2"; // 固定値、またはお好みのカラーコード
+          copyXBtn.style.backgroundColor = "#1da1f2";
         }, 1500);
       }).catch(() => console.log("コピーエラー"));
     });
 
-    // 初回起動時に1回計算・同期を走らせる
+    // 初期起動時の描画
     updateInvoice();
   });
 </script>
 </body>
 </html>
+
+  <div class="invoice-preview-wrapper">
