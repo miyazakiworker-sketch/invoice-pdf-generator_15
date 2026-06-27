@@ -140,7 +140,7 @@
     .btn-x { background-color: var(--x-color); color: white; }
     .btn-clear { background-color: #e0e0e0; color: #333; }
 
-    /* --- 📋 請求書プレビュー画面（縦伸びバグ完全撲滅版） --- */
+    /* --- 📋 請求書プレビュー画面（無駄な高さを完全カット） --- */
     .invoice-preview-wrapper {
       background: #dfdfdf;
       padding: 40px 10px;
@@ -154,8 +154,8 @@
     .invoice-page {
       background: #ffffff;
       width: 210mm;
-      height: auto;             /* 縦の固定を消し、文字量にジャストフィットさせました */
-      min-height: auto;         /* 巨大な余白を作る原因だったため完全消去しました */
+      height: auto;             /* 縦の固定を完全に廃止 */
+      min-height: auto;         /* 巨大な余白を作る原因だったため完全消去 */
       padding: 20mm;
       box-sizing: border-box;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -251,7 +251,7 @@
 
     .bottom-box p { margin: 4px 0; white-space: pre-wrap; }
 
-    /* 🐦 X（Twitter）ボタン（デザインを綺麗に上書き） */
+    /* 🐦 X（Twitter）ボタン */
     .x-follow-badge {
       display: inline-block;
       background-color: #1da1f2 !important;
@@ -292,8 +292,7 @@
       }
       @page { size: A4 portrait; margin: 15mm; }
     }
-</style>
-
+  </style>
 </head>
 <body>
 
@@ -403,12 +402,10 @@
     </div>
   </div>
 
-     <!-- A4プレビューエリア -->
+  <!-- A4プレビューエリア -->
   <div class="invoice-preview-wrapper">
-    <!-- min-heightによる引っ張りを防ぐため、インラインスタイルで高さを自動追従に上書き調整しています -->
-    <div class="invoice-page" id="invoice" style="min-height: auto; height: auto; aspect-ratio: 210 / 297;">
+    <div class="invoice-page" id="invoice">
       <div class="invoice-title" id="view-doc-type">請 求 書</div>
-      
       <div class="invoice-header">
         <div class="client-side">
           <div class="client-name" id="view-client">株式会社〇〇 御中</div>
@@ -473,17 +470,198 @@
     </div>
   </div>
 
-   <!-- 💡 スタイリッシュにバッジ化したX導線 -->
+  <!-- Xリンク設置エリア -->
   <div style="text-align: center; margin-top: 20px;" class="no-print">
     <a href="https://x.com/cocoa_next7" target="_blank" class="x-follow-badge">
       🐦 開発者ココアのX（旧Twitter）をフォローする ➔
     </a>
   </div>
 
-
   <div class="disclaimer">
     <strong>【免責事項・ご利用上の注意】</strong><br>
-    本ツールはブラウザのLocalStorage機能を使用し、ユーザーの端末内のみに情報を保存します。サーバーにデータが送信されることはありません。本ツールで生成された書類の正確性や、これに起因するトラブル・不利益について、開発者は一切の責任を負いません。実際の取引にあたにあたっては、インボイス制度等の要件を満たしているか、ご自身の責任で十分にご確認の上ご利用ください。
+    本ツールはブラウザのLocalStorage機能を使用し、ユーザーの端末内のみに情報を保存します。サーバーにデータが送信されることはありません。本ツールで生成された書類の正確性や、これに起因するトラブル・不利益について、開発者は一切の責任を負いません。実際の取引にあたっては、インボイス制度等の要件を満たしているか、ご自身の責任で十分にご確認の上ご利用ください。
   </div>
 
-</div> <!-- .container の閉じタグ -->
+</div> <!-- .container 終了 -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // DOM要素取得
+    const docTypeInput = document.getElementById("input-doc-type");
+    const docIdInput = document.getElementById("input-doc-id");
+    const issueDateInput = document.getElementById("input-issue-date");
+    const dueDateInput = document.getElementById("input-due-date");
+    const clientInput = document.getElementById("input-client");
+    const subjectInput = document.getElementById("input-subject");
+    const itemNameInput = document.getElementById("input-item-name");
+    const itemPriceInput = document.getElementById("input-item-price");
+    const notesInput = document.getElementById("input-notes");
+
+    const myNameInput = document.getElementById("save-my-name");
+    const myInvoiceIdInput = document.getElementById("save-my-invoice-id");
+    const myAddressInput = document.getElementById("save-my-address");
+    const myBankInput = document.getElementById("save-my-bank");
+
+    const btnInvoiceOn = document.getElementById("btn-invoice-on");
+    const btnInvoiceOff = document.getElementById("btn-invoice-off");
+    const btnGensenOn = document.getElementById("btn-gensen-on");
+    const btnGensenOff = document.getElementById("btn-gensen-off");
+    const clearStorageBtn = document.getElementById("clear-storage-btn");
+    const copyXBtn = document.getElementById("copy-x-btn");
+
+    let isInvoiceMode = true;
+    let isGensenMode = false;
+    let shareText = "";
+
+    // デフォルト日付自動セット
+    const today = new Date();
+    issueDateInput.value = today.toISOString().substr(0, 10);
+    const nextMonthEnd = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+    dueDateInput.value = nextMonthEnd.toISOString().substr(0, 10);
+    notesInput.value = "※振込手数料は貴社にてご負担願います。";
+
+    // LocalStorage復元
+    const loadFields = ["name", "invoice_id", "address", "bank", "invoice_mode", "gensen_mode"];
+    const savedData = {};
+    loadFields.forEach(f => { savedData[f] = localStorage.getItem("cocoa-invoice-" + f); });
+
+    if (savedData.name) myNameInput.value = savedData.name;
+    if (savedData.invoice_id) myInvoiceIdInput.value = savedData.invoice_id;
+    if (savedData.address) myAddressInput.value = savedData.address;
+    if (savedData.bank) myBankInput.value = savedData.bank;
+    
+    if (savedData.invoice_mode === "false") {
+      isInvoiceMode = false;
+      btnInvoiceOn.classList.remove("active");
+      btnInvoiceOff.classList.add("active");
+    }
+    if (savedData.gensen_mode === "true") {
+      isGensenMode = true;
+      btnGensenOn.classList.add("active");
+      btnGensenOff.classList.remove("active");
+    }
+
+    // トグル切り替えイベント
+    btnInvoiceOn.addEventListener("click", () => { isInvoiceMode = true; btnInvoiceOn.classList.add("active"); btnInvoiceOff.classList.remove("active"); updateInvoice(); });
+    btnInvoiceOff.addEventListener("click", () => { isInvoiceMode = false; btnInvoiceOff.classList.add("active"); btnInvoiceOn.classList.remove("active"); updateInvoice(); });
+    btnGensenOn.addEventListener("click", () => { isGensenMode = true; btnGensenOn.classList.add("active"); btnGensenOff.classList.remove("active"); updateInvoice(); });
+    btnGensenOff.addEventListener("click", () => { isGensenMode = false; btnGensenOff.classList.add("active"); btnGensenOn.classList.remove("active"); updateInvoice(); });
+
+    // 超軽量リアルタイム同期・計算エンジン
+    function updateInvoice() {
+      const docType = docTypeInput.value;
+      const docId = docIdInput.value || '---';
+      const client = clientInput.value || '株式会社〇〇 御中';
+      const subject = subjectInput.value || '〇〇に関する御請求';
+      const itemName = itemNameInput.value || '（未入力の品名）';
+      const itemPrice = parseFloat(itemPriceInput.value) || 0;
+
+      const myName = myNameInput.value || '（あなたの屋号・氏名）';
+      const myInvoiceId = myInvoiceIdInput.value || '未登録';
+      const myAddress = myAddressInput.value || '（あなたの住所・連絡先）';
+      const myBank = myBankInput.value || '（振込先口座情報）';
+      const notes = notesInput.value || '';
+
+      // 計算ロジック
+      let subtotal = itemPrice;
+      let tax = isInvoiceMode ? Math.floor(subtotal * 0.10) : 0;
+      let gensen = isGensenMode ? Math.floor(subtotal * 0.1021) : 0;
+      let grandTotal = subtotal + tax - gensen;
+
+      const formatDate = (dateStr) => {
+        if(!dateStr) return '---';
+        const d = new Date(dateStr);
+        return `${d.getFullYear()}年${String(d.getMonth()+1).padStart(2,'0')}月${String(d.getDate()).padStart(2,'0')}日`;
+      };
+
+      // プレビュー画面へ同期
+      document.getElementById('view-doc-type').innerText = docType.split('').join(' ');
+      document.getElementById('view-doc-id').innerText = docId;
+      document.getElementById('view-issue-date').innerText = formatDate(issueDateInput.value);
+      document.getElementById('view-due-date').innerText = formatDate(dueDateInput.value);
+      document.getElementById('view-client').innerText = client;
+      document.getElementById('view-subject').innerText = `件名：${subject}`;
+      document.getElementById('view-item-name').innerText = itemName;
+      
+      document.getElementById('view-item-price').innerText = `￥${subtotal.toLocaleString()}`;
+      document.getElementById('subtotal-val').innerText = `￥${subtotal.toLocaleString()}`;
+      
+      // インボイス制御
+      const taxRow = document.getElementById('tax-row');
+      if(isInvoiceMode) {
+        taxRow.style.display = 'table-row';
+        document.getElementById('tax-val').innerText = `￥${tax.toLocaleString()}`;
+        document.getElementById('view-my-invoice-id').innerText = `登録番号: ${myInvoiceId}`;
+      } else {
+        taxRow.style.display = 'none';
+        document.getElementById('view-my-invoice-id').innerText = '';
+      }
+
+      // 源泉徴収制御
+      const gensenRow = document.getElementById('gensen-row');
+      if(isGensenMode) {
+        gensenRow.style.display = 'table-row';
+        document.getElementById('gensen-val').innerText = `-￥${gensen.toLocaleString()}`;
+      } else {
+        gensenRow.style.display = 'none';
+      }
+
+      // 最終金額の同期
+      document.getElementById('view-total-label').innerText = `ご${docType}金額：`;
+      document.getElementById('view-grand-total').innerText = `￥${grandTotal.toLocaleString()}- (${isInvoiceMode ? '税込' : '非課税'})`;
+
+      document.getElementById('view-my-name').innerText = myName;
+      document.getElementById('view-my-address').innerText = myAddress;
+      document.getElementById('view-my-bank').innerText = myBank;
+      document.getElementById('view-notes').innerText = notes;
+
+      // 自動記憶処理
+      localStorage.setItem("cocoa-invoice-name", myNameInput.value);
+      localStorage.setItem("cocoa-invoice-invoice_id", myInvoiceIdInput.value);
+      localStorage.setItem("cocoa-invoice-address", myAddressInput.value);
+      localStorage.setItem("cocoa-invoice-bank", myBankInput.value);
+      localStorage.setItem("cocoa-invoice-invoice_mode", isInvoiceMode);
+      localStorage.setItem("cocoa-invoice-gensen_mode", isGensenMode);
+
+      // X報告用テキスト
+      shareText = `【${docType}一瞬ジェネレーターで書類を作成しました！】\n件名: ${subject}\n総額: ￥${grandTotal.toLocaleString()}-\nLocalStorage記憶機能で、次回から3秒でマナー100点満点のPDF出力が可能🔥\nアプデ後もURLは一生同じ！`;
+    }
+
+    // 入力リアルタイム監視
+    const allInputs = [
+      docTypeInput, docIdInput, issueDateInput, dueDateInput, clientInput,
+      subjectInput, itemNameInput, itemPriceInput, notesInput,
+      myNameInput, myInvoiceIdInput, myAddressInput, myBankInput
+    ];
+    allInputs.forEach(inp => inp.addEventListener("input", updateInvoice));
+
+    // 記憶クリア処理
+    clearStorageBtn.addEventListener("click", () => {
+      if(confirm('記憶しているあなたの情報や口座情報を完全に削除しますか？')) {
+        localStorage.clear();
+        myNameInput.value = ''; myInvoiceIdInput.value = ''; myAddressInput.value = ''; myBankInput.value = '';
+        isInvoiceMode = true; isGensenMode = false;
+        btnInvoiceOn.classList.add("active"); btnInvoiceOff.classList.remove("active");
+        btnGensenOn.classList.remove("active"); btnGensenOff.classList.add("active");
+        updateInvoice();
+      }
+    });
+
+    // 最速コピー処理
+    copyXBtn.addEventListener("click", () => {
+      if (!shareText) return;
+      navigator.clipboard.writeText(shareText).then(() => {
+        copyXBtn.textContent = "進捗コピー完了！Xへ移動します...💨";
+        copyXBtn.style.backgroundColor = "#2ed573";
+        setTimeout(() => {
+          copyXBtn.textContent = "進捗をXで報告 📋";
+          copyXBtn.style.backgroundColor = "#1da1f2";
+        }, 1500);
+      }).catch(() => console.log("コピーエラー"));
+    });
+
+    // 初回起動
+    updateInvoice();
+  });
+</script>
+</body>
+</html>
