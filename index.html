@@ -283,13 +283,12 @@
     if (dueDateInput) dueDateInput.value = nextMonthEnd.toISOString().substr(0, 10);
     if (notesInput) notesInput.value = "※振込手数料は貴社にてご負担願います。";
 
-    // LocalStorageからデータを復元
+      // LocalStorageからデータを復元（クラスの重複によるフリーズを完全に修正）
     if (localStorage.getItem("cocoa-invoice-name") && myNameInput) myNameInput.value = localStorage.getItem("cocoa-invoice-name");
     if (localStorage.getItem("cocoa-invoice-invoice_id") && myInvoiceIdInput) myInvoiceIdInput.value = localStorage.getItem("cocoa-invoice-invoice_id");
     if (localStorage.getItem("cocoa-invoice-address") && myAddressInput) myAddressInput.value = localStorage.getItem("cocoa-invoice-address");
     if (localStorage.getItem("cocoa-invoice-bank") && myBankInput) myBankInput.value = localStorage.getItem("cocoa-invoice-bank");
     
-    // 💡 フリーズの原因だったクラスのバグを完全修正
     if (localStorage.getItem("cocoa-invoice-invoice_mode") === "false") {
       isInvoiceMode = false;
       if (btnInvoiceOn) btnInvoiceOn.classList.remove("active");
@@ -300,6 +299,7 @@
       if (btnGensenOn) btnGensenOn.classList.add("active");
       if (btnGensenOff) btnGensenOff.classList.remove("active");
     }
+
 
     // トグル切り替えイベント
     if (btnInvoiceOn) { btnInvoiceOn.addEventListener("click", () => { isInvoiceMode = true; btnInvoiceOn.classList.add("active"); btnInvoiceOff.classList.remove("active"); localStorage.setItem("cocoa-invoice-invoice_mode", "true"); }); }
