@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>だるい見積書・請求書一瞬PDFジェネレーター</title>
   <style>
-        /* --- ココアさんの基本デザインシステム --- */
+    /* --- ココアさんの基本デザインシステム --- */
     :root {
       --bg-color: #f4f7f6;
       --panel-bg: #ffffff;
@@ -140,23 +140,22 @@
     .btn-x { background-color: var(--x-color); color: white; }
     .btn-clear { background-color: #e0e0e0; color: #333; }
 
-    /* --- 📋 請求書プレビュー画面（引き伸ばしバグ完全撲滅版） --- */
+    /* --- 📋 請求書プレビュー画面（縦伸びバグ完全撲滅版） --- */
     .invoice-preview-wrapper {
       background: #dfdfdf;
       padding: 40px 10px;
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       border-radius: 8px;
-      height: auto !important;      /* 無理な引き伸ばしを強制カット */
-      min-height: auto !important;  /* 無理な引き伸ばしを強制カット */
     }
 
     .invoice-page {
       background: #ffffff;
       width: 210mm;
-      height: 297mm;                /* A4縦サイズに完全に固定 */
+      height: auto;             /* 縦の固定を消し、文字量にジャストフィットさせました */
+      min-height: auto;         /* 巨大な余白を作る原因だったため完全消去しました */
       padding: 20mm;
       box-sizing: border-box;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -252,23 +251,18 @@
 
     .bottom-box p { margin: 4px 0; white-space: pre-wrap; }
 
-    /* 🐦 X（Twitter）フォロー誘導ボタンの最適化デザイン */
+    /* 🐦 X（Twitter）ボタン（デザインを綺麗に上書き） */
     .x-follow-badge {
       display: inline-block;
-      background-color: #1da1f2;
+      background-color: #1da1f2 !important;
       color: #ffffff !important;
       text-decoration: none !important;
       font-weight: bold;
       font-size: 13px;
-      padding: 8px 16px;
+      padding: 10px 24px;
       border-radius: 20px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      transition: background-color 0.2s, transform 0.2s;
-    }
-    
-    .x-follow-badge:hover {
-      background-color: #1a91da;
-      transform: translateY(-1px);
+      margin: 20px 0;
     }
 
     /* 免責事項エリア */
@@ -298,8 +292,8 @@
       }
       @page { size: A4 portrait; margin: 15mm; }
     }
+</style>
 
-  </style>
 </head>
 <body>
 
