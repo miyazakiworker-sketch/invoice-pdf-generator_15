@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>だるい見積書・請求書一瞬PDFジェネレーター</title>
   <style>
-    /* --- ココアさんの基本デザインシステム --- */
+        /* --- ココアさんの基本デザインシステム --- */
     :root {
       --bg-color: #f4f7f6;
       --panel-bg: #ffffff;
@@ -140,7 +140,7 @@
     .btn-x { background-color: var(--x-color); color: white; }
     .btn-clear { background-color: #e0e0e0; color: #333; }
 
-    /* --- 📋 請求書プレビュー画面（下の空白バグ修正） --- */
+    /* --- 📋 請求書プレビュー画面（引き伸ばしバグ完全撲滅版） --- */
     .invoice-preview-wrapper {
       background: #dfdfdf;
       padding: 40px 10px;
@@ -149,12 +149,14 @@
       align-items: flex-start;
       margin-bottom: 30px;
       border-radius: 8px;
+      height: auto !important;      /* 無理な引き伸ばしを強制カット */
+      min-height: auto !important;  /* 無理な引き伸ばしを強制カット */
     }
 
     .invoice-page {
       background: #ffffff;
       width: 210mm;
-      min-height: 297mm;
+      height: 297mm;                /* A4縦サイズに完全に固定 */
       padding: 20mm;
       box-sizing: border-box;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -250,7 +252,26 @@
 
     .bottom-box p { margin: 4px 0; white-space: pre-wrap; }
 
-    /* 【過去作デザイン準拠】免責事項エリア */
+    /* 🐦 X（Twitter）フォロー誘導ボタンの最適化デザイン */
+    .x-follow-badge {
+      display: inline-block;
+      background-color: #1da1f2;
+      color: #ffffff !important;
+      text-decoration: none !important;
+      font-weight: bold;
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: background-color 0.2s, transform 0.2s;
+    }
+    
+    .x-follow-badge:hover {
+      background-color: #1a91da;
+      transform: translateY(-1px);
+    }
+
+    /* 免責事項エリア */
     .disclaimer {
       margin-top: 30px;
       padding: 15px;
@@ -265,7 +286,7 @@
     @media print {
       body { background: none; padding: 0; }
       .container { max-width: 100%; margin: 0; }
-      .control-panel, h1, .subtitle, .disclaimer, .no-print { display: none !important; }
+      .control-panel, h1, .subtitle, .disclaimer, .no-print, .x-follow-badge { display: none !important; }
       .invoice-preview-wrapper { background: none; padding: 0; margin: 0; }
       .invoice-page {
         width: 210mm;
@@ -277,6 +298,7 @@
       }
       @page { size: A4 portrait; margin: 15mm; }
     }
+
   </style>
 </head>
 <body>
@@ -457,12 +479,13 @@
     </div>
   </div>
 
-  <!-- 💡 ココアさんのX（旧Twitter）リンク設置エリア -->
+   <!-- 💡 スタイリッシュにバッジ化したX導線 -->
   <div style="text-align: center; margin-top: 20px;" class="no-print">
-    <a href="https://x.com/cocoa_next7" target="_blank" style="color: var(--x-color); text-decoration: none; font-weight: bold; font-size: 14px;">
-      🛠️ 開発者ココアのX（旧Twitter）をフォローする ➔
+    <a href="https://x.com/cocoa_next7" target="_blank" class="x-follow-badge">
+      🐦 開発者ココアのX（旧Twitter）をフォローする ➔
     </a>
   </div>
+
 
   <div class="disclaimer">
     <strong>【免責事項・ご利用上の注意】</strong><br>
