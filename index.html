@@ -334,7 +334,7 @@
       }
     });
 
-    // 💡 過去作のロジック完全移植：ボタンを押したその瞬間に最速でXにジャンプする（フリーズしません）
+        // 💡 X報告ボタン（非同期コピーの干渉を確実に回避する修正版）
     if (copyXBtn) {
       copyXBtn.addEventListener("click", (e) => {
         e.preventDefault();
@@ -350,17 +350,26 @@
 
         const shareText = "【" + docType + "一瞬ジェネレーターで書類を作成しました！】\n件名: " + subject + "\n総額: ￥" + grandTotal.toLocaleString() + "-\nLocalStorage記憶機能で、次回から3秒でマナー100点満点のPDF出力が可能🔥\nアプデ後もURLは一生同じ！";
 
+        // 💡 確実に別タブを開くために、エラーが起きやすいクリップボード処理を後ろに回し、最速でwindow.openを発火させます
+        window.open('https://twitter.com' + encodeURIComponent(shareText), '_blank');
+
         navigator.clipboard.writeText(shareText).then(() => {
-          window.open('https://twitter.com' + encodeURIComponent(shareText), '_blank');
           copyXBtn.textContent = "進捗コピー完了！Xへ移動しました...💨";
           copyXBtn.style.backgroundColor = "#2ed573";
           setTimeout(() => {
             copyXBtn.textContent = "進捗をXで報告 📋";
             copyXBtn.style.backgroundColor = "#1da1f2";
           }, 1500);
-        }).catch(() => alert("コピーに失敗しました"));
+        }).catch(() => {
+          // 万が一ブラウザがコピーを拒否しても、Xの画面への移動だけは100%維持させます
+          copyXBtn.textContent = "Xへ移動しました...💨";
+          setTimeout(() => {
+            copyXBtn.textContent = "進捗をXで報告 📋";
+          }, 1500);
+        });
       });
     }
+
 
     // ✨ 1タップでPDF出力ボタンクリック時の裏側合成処理
     if (pdfOutputBtn) {
