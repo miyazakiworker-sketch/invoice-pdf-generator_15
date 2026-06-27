@@ -379,12 +379,28 @@
       <textarea id="input-notes" rows="2" placeholder="※振込手数料は貴社にてご負担願います。"></textarea>
     </div>
 
-    <div class="btn-container">
+       <div class="btn-container">
       <button class="btn btn-clear" id="clear-storage-btn">記憶クリア</button>
       <button class="btn btn-x" id="copy-x-btn">進捗をXで報告 📋</button>
       <button class="btn btn-pdf" onclick="window.print()">✨ 1タップでPDF出力</button>
     </div>
+  </div> <!-- .control-panel の閉じ -->
+
+  <!-- A4プレビューエリア -->
+  <div class="invoice-preview-wrapper">
+    <div class="invoice-page" id="invoice">
+      <!-- 請求書の中身（略） -->
+    </div>
   </div>
+
+  <!-- 【過去作準拠】正しい位置に配置した免責事項 -->
+  <div class="disclaimer">
+    <strong>【免責事項・ご利用上の注意】</strong><br>
+    本ツールはブラウザのLocalStorage機能を使用し、ユーザーの端末内のみに情報を保存します。サーバーにデータが送信されることはありません。本ツールで生成された書類の正確性や、これに起因するトラブル・不利益について、開発者は一切の責任を負いません。実際の取引にあたっては、インボイス制度等の要件を満たしているか、ご自身の責任で十分にご確認の上ご利用ください。
+  </div>
+
+</div> <!-- .container の閉じ（これを最後に持ってくることで正しく中に収まります） -->
+
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     // フォームパーツ
