@@ -1,318 +1,843 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>だるい見積書・請求書一瞬PDFジェネレーター</title>
-  <style>
-    /* --- ココアさんの基本デザインシステム --- */
-    :root {
-      --bg-color: #f4f7f6;
-      --panel-bg: #ffffff;
-      --text-color: #333333;
-      --accent-color: #0076df;
-      --border-color: #cccccc;
-      --x-color: #1da1f2;
-    }
 
-    body {
-      font-family: "Helvetica Neue", Arial, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 20px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    .container {
-      max-width: 950px;
-      margin: 0 auto;
-    }
+<title>見積書・請求書ジェネレーター｜COCOA TOOLS v2.0</title>
 
-    h1, .subtitle {
-      text-align: center;
-      margin: 0 0 5px 0;
-    }
+<meta name="description"
+content="見積書・請求書をブラウザだけで簡単作成。印刷・PDF保存・LocalStorage対応。">
 
-    h1 {
-      color: var(--accent-color);
-      font-size: 24px;
-    }
+<style>
 
-    .subtitle {
-      font-size: 14px;
-      color: #666;
-      margin-bottom: 25px;
-    }
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
 
-    /* 操作パネル */
-    .control-panel {
-      background: var(--panel-bg);
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 30px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    }
+body{
+background:#0d0f12;
+color:#e2e8f0;
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+padding:18px;
+display:flex;
+justify-content:center;
+}
 
-    .panel-title {
-      font-size: 16px;
-      font-weight: bold;
-      margin: 0 0 15px 0;
-      border-bottom: 2px solid var(--accent-color);
-      padding-bottom: 5px;
-    }
+.container{
+width:100%;
+max-width:480px;
+background:#1a1f26;
+border:1px solid #2d3748;
+border-radius:20px;
+padding:24px 18px;
+box-shadow:0 10px 35px rgba(0,0,0,.45);
+}
 
-    .form-row {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 15px;
-    }
+.logo{
+font-size:3rem;
+text-align:center;
+margin-bottom:10px;
+}
 
-    .form-row > div {
-      flex: 1;
-    }
+h1{
+text-align:center;
+font-size:1.7rem;
+color:#fff;
+margin-bottom:8px;
+}
 
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
+.bio{
+text-align:center;
+color:#94a3b8;
+font-size:.9rem;
+margin-bottom:25px;
+line-height:1.6;
+}
 
-    input, textarea, select {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      box-sizing: border-box;
-      font-size: 14px;
-    }
+.section-title{
+margin:28px 0 14px;
+padding-bottom:8px;
+border-bottom:2px solid #2d3748;
+font-size:1.15rem;
+font-weight:bold;
+}
 
-    .toggle-container {
-      display: flex;
-      gap: 10px;
-    }
+.card{
+background:#111827;
+border:1px solid #2d3748;
+border-radius:14px;
+padding:16px;
+margin-bottom:18px;
+}
 
-    .btn-toggle {
-      flex: 1;
-      padding: 10px;
-      font-size: 13px;
-      font-weight: bold;
-      border: 1px solid var(--border-color);
-      background: #f9f9f9;
-      border-radius: 4px;
-      cursor: pointer;
-    }
+label{
+display:block;
+font-size:.82rem;
+margin-bottom:6px;
+color:#cbd5e0;
+}
 
-    .btn-toggle.active {
-      background-color: var(--accent-color);
-      color: white;
-      border-color: var(--accent-color);
-    }
+input,
+textarea,
+select{
 
-    .btn-container {
-      display: flex;
-      gap: 15px;
-      margin-top: 20px;
-    }
+width:100%;
+background:#0d1117;
+color:#fff;
+border:1px solid #374151;
+border-radius:10px;
+padding:12px;
+margin-bottom:14px;
+font-size:.92rem;
 
-    .btn {
-      flex: 1;
-      padding: 12px;
-      font-size: 15px;
-      font-weight: bold;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      text-align: center;
-    }
+}
 
-    .btn-pdf { background-color: #2ed573; color: white; }
-    .btn-x { background-color: var(--x-color); color: white; text-decoration: none; }
-    .btn-clear { background-color: #e0e0e0; color: #333; }
-    
-    .x-follow-badge {
-      display: inline-block;
-      background-color: #1da1f2 !important;
-      color: white !important;
-      text-decoration: none !important;
-      font-weight: bold;
-      font-size: 13px;
-      padding: 10px 24px;
-      border-radius: 20px;
-      margin: 20px 0;
-    }
+textarea{
 
-    /* 広告枠（過去作準拠の点線枠） */
-    .ad-container {
-      margin-top: 30px;
-      text-align: center;
-    }
+resize:vertical;
 
-    .ad-label {
-      font-size: 10px;
-      color: #999999;
-      letter-spacing: 1px;
-      margin-bottom: 5px;
-    }
+}
 
-    .ad-box {
-      background: #ffffff;
-      border: 2px dashed var(--border-color);
-      border-radius: 6px;
-      padding: 20px;
-      color: #777777;
-      font-size: 13px;
-      font-weight: bold;
-      min-height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-sizing: border-box;
-    }
+.row{
 
-    .disclaimer {
-      margin-top: 30px;
-      padding: 15px;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 11px;
-      color: #666;
-    }
-    
-    /* 📋 印刷用隠しプレビューエリア（通常画面では非表示、印刷時のみ出現） */
-    #runtime-invoice-wrapper { display: none; }
-    .invoice-page { font-size: 14px; color: #000; background: #fff; }
-    .invoice-title { font-size: 28px; font-weight: bold; letter-spacing: 4px; text-align: center; margin-bottom: 30px; border-bottom: 3px double #000; padding-bottom: 5px; }
-    .invoice-header { display: flex; justify-content: space-between; margin-bottom: 30px; }
-    .client-side { width: 50%; }
-    .client-name { font-size: 18px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 5px; }
-    .provider-side { width: 45%; text-align: right; }
-    .provider-name { font-size: 16px; font-weight: bold; }
-    .total-block { background: #f2f2f2; border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 10px 15px; font-size: 20px; font-weight: bold; display: flex; justify-content: space-between; margin-bottom: 30px; }
-    .item-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-    .item-table th { background: #f2f2f2; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 8px; font-size: 13px; }
-    .item-table td { border-bottom: 1px solid #e0e0e0; padding: 10px 8px; }
-    .text-center { text-align: center; }
-    .text-right { text-align: right; }
-    .invoice-footer-details { display: flex; gap: 20px; margin-top: 40px; }
-    .bottom-box { flex: 1; border: 1px solid #ccc; padding: 12px; border-radius: 4px; background: #fafafa; font-size: 12px; }
-    .bottom-box-title { font-weight: bold; margin-bottom: 5px; border-bottom: 1px solid #ccc; padding-bottom: 3px; }
-    .bottom-box p { margin: 4px 0; white-space: pre-wrap; }
-    
-    @media print {
-      body { background: none; padding: 0; }
-      .control-panel, h1, .subtitle, .disclaimer, .no-print, .x-follow-badge, .ad-container { display: none !important; }
-      #runtime-invoice-wrapper { display: block !important; }
-    }
-  </style>
+display:flex;
+gap:10px;
+
+}
+
+.row .col{
+
+flex:1;
+
+}
+
+.button{
+
+width:100%;
+background:#a3e635;
+color:#111827;
+border:none;
+border-radius:12px;
+padding:14px;
+font-size:1rem;
+font-weight:bold;
+cursor:pointer;
+margin-top:12px;
+transition:.2s;
+
+}
+
+.button:hover{
+
+background:#b8f24b;
+
+}
+
+.sub-button{
+
+width:100%;
+background:#374151;
+color:#fff;
+border:none;
+border-radius:12px;
+padding:13px;
+margin-top:10px;
+cursor:pointer;
+
+}
+
+.toggle{
+
+display:flex;
+gap:10px;
+
+}
+
+.toggle button{
+
+flex:1;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#374151;
+color:#fff;
+cursor:pointer;
+
+}
+
+.toggle button.active{
+
+background:#2563eb;
+
+}
+
+.info{
+
+background:#111827;
+border:1px solid #2d3748;
+border-radius:12px;
+padding:15px;
+font-size:.82rem;
+line-height:1.7;
+color:#94a3b8;
+margin-top:20px;
+
+}
+
+footer{
+
+margin-top:30px;
+padding-top:20px;
+border-top:1px solid #2d3748;
+text-align:center;
+
+}
+
+footer a{
+
+color:#60a5fa;
+text-decoration:none;
+
+}
+
+</style>
+
 </head>
+
 <body>
+
 <div class="container">
-  <h1>だるい見積書・請求書一瞬PDFジェネレーター</h1>
-  <div class="subtitle">一度入力すればLocalStorageが一生記憶。次回から3秒でマナー100点満点のPDF出力が可能。</div>
 
-  <!-- 操作パネル -->
-  <div class="control-panel">
-    <div class="panel-title">⚙️ 書類設定（入力するとリアルタイム反映）</div>
-    <div class="form-row">
-      <div><label>書類種別</label><select id="input-doc-type"><option value="請求書">請求書</option><option value="見積書">見積書</option></select></div>
-      <div><label>書類番号 (任意)</label><input type="text" id="input-doc-id" placeholder="例：IV-20260001"></div>
-    </div>
-    <div class="form-row">
-      <div><label>発行日</label><input type="date" id="input-issue-date"></div>
-      <div><label>お支払期限 / 有効期限</label><input type="date" id="input-due-date"></div>
-    </div>
-    <div class="form-row">
-      <div style="flex: 2;"><label>取引先名 (宛名)</label><input type="text" id="input-client" placeholder="株式会社〇〇 御中"></div>
-      <div><label>件名</label><input type="text" id="input-subject" placeholder="例：Webサイト制作御請求"></div>
-    </div>
-    <div class="form-row">
-      <div style="flex: 2;"><label>品名 / 案件名</label><input type="text" id="input-item-name" placeholder="例：システム開発案件 コーディング費"></div>
-      <div><label>単価 (税抜・円)</label><input type="number" id="input-item-price" placeholder="300000"></div>
-    </div>
-    <div class="form-row">
-      <div><label>インボイス制度</label><div class="toggle-container"><button type="button" id="btn-invoice-on" class="btn-toggle active">対応する</button><button type="button" id="btn-invoice-off" class="btn-toggle">非対応</button></div></div>
-      <div><label>源泉徴収税の自動差引</label><div class="toggle-container"><button type="button" id="btn-gensen-on" class="btn-toggle">引く</button><button type="button" id="btn-gensen-off" class="btn-toggle active">引かない</button></div></div>
-    </div>
-    <div class="panel-title" style="margin-top: 25px;">👤 あなたの情報（自動記憶されます）</div>
-    <div class="form-row">
-      <div><label>屋号 / 氏名</label><input type="text" id="save-my-name" placeholder="ココアアプリ開発工房"></div>
-      <div><label>インボイス登録番号</label><input type="text" id="save-my-invoice-id" placeholder="T1234567890123"></div>
-    </div>
-    <div class="form-group" style="margin-bottom: 15px;"><label>住所・連絡先</label><textarea id="save-my-address" rows="2" placeholder="〒000-0000..."></textarea></div>
-    <div class="form-group" style="margin-bottom: 15px;"><label>お振込先口座情報</label><textarea id="save-my-bank" rows="2" placeholder="〇〇銀行..."></textarea></div>
-    <div class="form-group"><label>備考欄</label><textarea id="input-notes" rows="2"></textarea></div>
-    <div class="btn-container">
-      <button class="btn btn-clear" id="clear-storage-btn">記憶クリア</button>
-      <button class="btn btn-pdf" id="pdf-output-btn">✨ 1タップでPDF出力</button>
-    </div>
-  </div>
+<div class="logo">
+📄
+</div>
 
-  <!-- 過去作準拠：将来使う広告枠 -->
-  <div class="ad-container no-print">
-    <div class="ad-label">SPONSORED</div>
-    <div class="ad-box"><p>【ここに将来の広告や自作アプリのバナーを表示】</p></div>
-  </div>
+<h1>
+見積書・請求書ジェネレーター
+</h1>
 
-  <div style="text-align: center;" class="no-print"><a href="https://x.com/cocoa_next7" target="_blank" class="x-follow-badge">🐦 開発者ココアのXをフォローする </a></div>
-  </div> <!-- .ad-container の閉じタグ -->
+<p class="bio">
 
-  <!-- 💡 過去作に完全に準拠した、誠実でマナーに配慮した免責事項エリア -->
-  <div class="disclaimer">
-    <strong>【免責事項】</strong><br>
-    本ツールは個人フリーランスや副業の初心者層を想定した、ブラウザ上で完結する簡易書類生成シミュレーターです。LocalStorage機能を使用してユーザーの端末内のみに事業者情報を記憶させる仕組みであり、サーバー等へのデータ送信は一切行いません。本ツールで計算・出力された書類の正確性、およびこれに起因する取引上のトラブルや税務上の不利益について、開発者は一切の責任を負いません。適格請求書（インボイス）としての正確な要件や、実際の取引に関する商習慣マナーにつきましては、ご自身の業種や取引先の指定、税務署等のガイドラインをご確認の上でご利用ください。
-  </div>
+入力するだけで<br>
+見積書・請求書を一瞬作成。
 
-</div> <!-- .container の閉じタグ -->
+</p>
 
-<!-- 印刷用データコンテナ -->
-<div id="runtime-invoice-wrapper"></div>
+<h2 class="section-title">
+📝 基本情報
+</h2>
+
+<div class="card">
+
+<label>
+書類種類
+</label>
+
+<select id="docType">
+
+<option>見積書</option>
+<option>請求書</option>
+
+</select>
+
+<label>
+発行日
+</label>
+
+<input
+type="date"
+id="issueDate">
+
+<label>
+宛名
+</label>
+
+<input
+type="text"
+id="client"
+placeholder="株式会社○○ 御中">
+
+<label>
+件名
+</label>
+
+<input
+type="text"
+id="subject"
+placeholder="工事代金">
+
+</div><h2 class="section-title">
+👤 あなたの情報
+</h2>
+
+<div class="card">
+
+<label>
+屋号・会社名
+</label>
+
+<input
+type="text"
+id="myName"
+placeholder="COCOA TOOLS">
+
+<label>
+担当者名
+</label>
+
+<input
+type="text"
+id="myPerson"
+placeholder="ココア">
+
+<label>
+住所
+</label>
+
+<textarea
+id="myAddress"
+rows="3"
+placeholder="〒000-0000&#10;東京都○○区○○1-2-3">
+</textarea>
+
+<label>
+電話番号
+</label>
+
+<input
+type="text"
+id="myPhone"
+placeholder="090-1234-5678">
+
+<label>
+メールアドレス
+</label>
+
+<input
+type="email"
+id="myMail"
+placeholder="sample@example.com">
+
+<label>
+インボイス登録番号
+</label>
+
+<input
+type="text"
+id="invoiceId"
+placeholder="T1234567890123">
+
+<label>
+振込先
+</label>
+
+<textarea
+id="bank"
+rows="3"
+placeholder="○○銀行 ○○支店&#10;普通 1234567&#10;ココア">
+</textarea>
+
+</div>
+
+<h2 class="section-title">
+📦 明細
+</h2>
+
+<div class="card">
+
+<label>
+品名
+</label>
+
+<input
+type="text"
+id="itemName"
+placeholder="ホームページ制作">
+
+<div class="row">
+
+<div class="col">
+
+<label>
+数量
+</label>
+
+<input
+type="number"
+id="qty"
+value="1">
+
+</div>
+
+<div class="col">
+
+<label>
+単価
+</label>
+
+<input
+type="number"
+id="price"
+placeholder="100000">
+
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="col">
+
+<label>
+消費税
+</label>
+
+<select id="tax">
+
+<option value="10">
+10％
+</option>
+
+<option value="8">
+8％
+</option>
+
+<option value="0">
+なし
+</option>
+
+</select>
+
+</div>
+
+<div class="col">
+
+<label>
+源泉徴収
+</label>
+
+<div class="toggle">
+
+<button
+id="gensenOff"
+class="active"
+type="button">
+OFF
+</button>
+
+<button
+id="gensenOn"
+type="button">
+ON
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<div style="margin-top:14px;">
+
+<label>
+インボイス制度
+</label>
+
+<div class="toggle">
+
+<button
+id="invoiceOn"
+class="active"
+type="button">
+対応
+</button>
+
+<button
+id="invoiceOff"
+type="button">
+非対応
+</button>
+
+</div>
+
+</div>
+
+</div><h2 class="section-title">
+💰 計算結果
+</h2>
+
+<div class="card">
+
+<div class="row">
+
+<div class="col">
+
+<label>小計</label>
+
+<input
+type="text"
+id="subtotal"
+readonly>
+
+</div>
+
+<div class="col">
+
+<label>消費税</label>
+
+<input
+type="text"
+id="taxPrice"
+readonly>
+
+</div>
+
+</div>
+
+<label>
+源泉徴収
+</label>
+
+<input
+type="text"
+id="gensenPrice"
+readonly>
+
+<label>
+合計金額（税込）
+</label>
+
+<input
+type="text"
+id="grandTotal"
+readonly
+style="
+font-size:1.3rem;
+font-weight:bold;
+color:#a3e635;
+">
+
+</div>
+
+<h2 class="section-title">
+⚡ 操作
+</h2>
+
+<div class="card">
+
+<button
+class="button"
+id="calcBtn">
+
+🧮 合計を計算
+
+</button>
+
+<button
+class="button"
+id="pdfBtn">
+
+📄 PDF保存
+
+</button>
+
+<button
+class="sub-button"
+id="copyBtn">
+
+📋 内容コピー
+
+</button>
+
+<button
+class="sub-button"
+id="lineBtn">
+
+💬 LINE共有
+
+</button>
+
+<button
+class="sub-button"
+id="xBtn">
+
+🐦 Xへ投稿
+
+</button>
+
+<button
+class="sub-button"
+id="clearBtn">
+
+🗑 入力をリセット
+
+</button>
+
+</div>
+
+<div class="ad-box">
+
+広告スペース
+
+</div>
+
+<div class="info">
+
+<strong>免責事項</strong><br><br>
+
+本ツールは簡易的な見積書・請求書作成ツールです。内容の正確性は保証しておりません。実際の請求・税務処理・インボイス制度については、必ず税理士・税務署・取引先の指示をご確認ください。
+
+</div>
+
+<footer>
+
+<p>
+
+開発：
+<a
+href="https://x.com/cocoa_next7"
+target="_blank">
+
+ココア (@cocoa_next7)
+
+</a>
+
+</p>
+
+<p
+style="
+margin-top:10px;
+color:#64748b;
+font-size:.8rem;
+">
+
+© COCOA TOOLS v2.0
+
+</p>
+
+</footer>
+
+</div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    // 画面上の全要素を取得
-    const docTypeInput = document.getElementById("input-doc-type"), docIdInput = document.getElementById("input-doc-id"), issueDateInput = document.getElementById("input-issue-date"), dueDateInput = document.getElementById("input-due-date"), clientInput = document.getElementById("input-client"), subjectInput = document.getElementById("input-subject"), itemNameInput = document.getElementById("input-item-name"), itemPriceInput = document.getElementById("input-item-price"), notesInput = document.getElementById("input-notes"), myNameInput = document.getElementById("save-my-name"), myInvoiceIdInput = document.getElementById("save-my-invoice-id"), myAddressInput = document.getElementById("save-my-address"), myBankInput = document.getElementById("save-my-bank"), btnInvoiceOn = document.getElementById("btn-invoice-on"), btnInvoiceOff = document.getElementById("btn-invoice-off"), btnGensenOn = document.getElementById("btn-gensen-on"), btnGensenOff = document.getElementById("btn-gensen-off"), clearStorageBtn = document.getElementById("clear-storage-btn"), copyXBtn = document.getElementById("copy-x-btn"), pdfOutputBtn = document.getElementById("pdf-output-btn");
-    let isInvoiceMode = true, isGensenMode = false;
 
-    // 日付初期値セット
-    const today = new Date();
-    if (issueDateInput) issueDateInput.value = today.toISOString().substr(0, 10);
-    const nextMonthEnd = new Date(today.getFullYear(), today.getMonth() + 2, 0);
-    if (dueDateInput) dueDateInput.value = nextMonthEnd.toISOString().substr(0, 10);
-    if (notesInput) notesInput.value = "※振込手数料は貴社にてご負担願います。";
+const qty=document.getElementById("qty");
+const price=document.getElementById("price");
+const tax=document.getElementById("tax");
 
-      // LocalStorageからデータを復元（クラスの重複によるフリーズを完全に修正）
-    if (localStorage.getItem("cocoa-invoice-name") && myNameInput) myNameInput.value = localStorage.getItem("cocoa-invoice-name");
-    if (localStorage.getItem("cocoa-invoice-invoice_id") && myInvoiceIdInput) myInvoiceIdInput.value = localStorage.getItem("cocoa-invoice-invoice_id");
-    if (localStorage.getItem("cocoa-invoice-address") && myAddressInput) myAddressInput.value = localStorage.getItem("cocoa-invoice-address");
-    if (localStorage.getItem("cocoa-invoice-bank") && myBankInput) myBankInput.value = localStorage.getItem("cocoa-invoice-bank");
-    
-       // 💡 トグルボタンのフリーズとX報告の不具合をピンポイントで完全修正
-    if (localStorage.getItem("cocoa-invoice-invoice_mode") === "false") {
-      isInvoiceMode = false;
-      if (btnInvoiceOn) btnInvoiceOn.classList.remove("active");
-      if (btnInvoiceOff) btnInvoiceOff.classList.add("active");
-    }
-    if (localStorage.getItem("cocoa-invoice-gensen_mode") === "true") {
-      isGensenMode = true;
-      if (btnGensenOn) btnGensenOn.classList.add("active");
-      if (btnGensenOff) btnGensenOff.classList.remove("active");
-    }
+const subtotal=document.getElementById("subtotal");
+const taxPrice=document.getElementById("taxPrice");
+const gensenPrice=document.getElementById("gensenPrice");
+const grandTotal=document.getElementById("grandTotal");
 
-    if (copyXBtn) {
-      copyXBtn.onclick = function(e) {
-        e.preventDefault();
-        var docType = docTypeInput ? (docTypeInput.value || '請求書') : '請求書';
-        var subject = subjectInput ? (subjectInput.value || '〇〇に関する御請求') : '〇〇に関する御請求';
-        var itemPrice = itemPriceInput ? (parseFloat(itemPriceInput.value) || 0) : 0;
-        var subtotal = itemPrice, tax = isInvoiceMode ? Math.floor(subtotal * 0.10) : 0, gensen = isGensenMode ? Math.floor(subtotal * 0.1021) : 0, grandTotal = subtotal + tax - gensen;
-        var shareText = "【" + docType + "一瞬ジェネレーターで書類を作成しました！】\n件名: " + subject + "\n総額: ￥" + grandTotal.toLocaleString() + "-\n次回から3秒でマナー100点満点のPDF出力が可能🔥";
-        
-        window.open('https://twitter.com' + encodeURIComponent(shareText), '_blank');
-      };
-    }
-  });
+let gensen=false;
+
+document.getElementById("gensenOn").onclick=()=>{
+
+gensen=true;
+
+document.getElementById("gensenOn").classList.add("active");
+document.getElementById("gensenOff").classList.remove("active");
+
+}
+
+document.getElementById("gensenOff").onclick=()=>{
+
+gensen=false;
+
+document.getElementById("gensenOff").classList.add("active");
+document.getElementById("gensenOn").classList.remove("active");
+
+}
+
+document.getElementById("calcBtn").onclick=()=>{
+
+const q=Number(qty.value)||0;
+
+const p=Number(price.value)||0;
+
+const sub=q*p;
+
+const taxValue=Math.floor(sub*(Number(tax.value)/100));
+
+const gen=gensen?Math.floor(sub*0.1021):0;
+
+const total=sub+taxValue-gen;
+
+subtotal.value="¥"+sub.toLocaleString();
+
+taxPrice.value="¥"+taxValue.toLocaleString();
+
+gensenPrice.value="¥"+gen.toLocaleString();
+
+grandTotal.value="¥"+total.toLocaleString();
+
+};
+// ===== LocalStorage =====
+
+const saveIds=[
+"docType",
+"issueDate",
+"client",
+"subject",
+"myName",
+"myPerson",
+"myAddress",
+"myPhone",
+"myMail",
+"invoiceId",
+"bank",
+"itemName",
+"qty",
+"price",
+"tax"
+];
+
+saveIds.forEach(id=>{
+
+const el=document.getElementById(id);
+
+if(!el)return;
+
+const data=localStorage.getItem(id);
+
+if(data!==null){
+
+el.value=data;
+
+}
+
+el.addEventListener("input",()=>{
+
+localStorage.setItem(id,el.value);
+
+});
+
+});
+
+// ===== PDF保存 =====
+
+document.getElementById("pdfBtn").onclick=()=>{
+
+window.print();
+
+};
+
+// ===== コピー =====
+
+document.getElementById("copyBtn").onclick=()=>{
+
+const text=
+
+`【${document.getElementById("docType").value}】
+
+宛名：${document.getElementById("client").value}
+
+件名：${document.getElementById("subject").value}
+
+品名：${document.getElementById("itemName").value}
+
+合計：${grandTotal.value}
+
+発行者：${document.getElementById("myName").value}`;
+
+navigator.clipboard.writeText(text);
+
+alert("コピーしました");
+
+};
+
+// ===== LINE =====
+
+document.getElementById("lineBtn").onclick=()=>{
+
+const text=encodeURIComponent(
+
+`${document.getElementById("docType").value}
+
+${document.getElementById("subject").value}
+
+${grandTotal.value}`
+
+);
+
+window.open(
+
+"https://social-plugins.line.me/lineit/share?text="+text,
+
+"_blank"
+
+);
+
+};
+
+// ===== X =====
+
+document.getElementById("xBtn").onclick=()=>{
+
+const text=encodeURIComponent(
+
+`${document.getElementById("docType").value}を作成しました📄
+
+${grandTotal.value}
+
+#COCOATOOLS`
+
+);
+
+window.open(
+
+"https://twitter.com/intent/tweet?text="+text,
+
+"_blank"
+
+);
+
+};
+
+// ===== リセット =====
+
+document.getElementById("clearBtn").onclick=()=>{
+
+if(!confirm("入力内容を削除しますか？")){
+
+return;
+
+}
+
+saveIds.forEach(id=>{
+
+localStorage.removeItem(id);
+
+const el=document.getElementById(id);
+
+if(el){
+
+el.value="";
+
+}
+
+});
+
+subtotal.value="";
+
+taxPrice.value="";
+
+gensenPrice.value="";
+
+grandTotal.value="";
+
+};
+
+// 初回計算
+
+document.getElementById("calcBtn").click();
+
 </script>
+
 </body>
 </html>
